@@ -65,7 +65,7 @@ return [
     |
     */
 
-    'timezone' => env('APP_TIMEZONE', 'UTC'),
+    'timezone' => 'Asia/Manila', // Change this based on your location
 
     /*
     |--------------------------------------------------------------------------
