@@ -5,12 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Office extends Model
+class Bureau extends Model
 {
     protected $fillable = ['name', 'abbreviation', 'head'];
 
-    public function users(): HasMany
+    public function projects(): HasMany
     {
-        return $this->hasMany(User::class);
+        return $this->hasMany(Project::class);
     }
 }

@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\OfficeResource\Pages;
-use App\Filament\Resources\OfficeResource\RelationManagers;
-use App\Models\Office;
+use App\Filament\Resources\BureauResource\Pages;
+use App\Filament\Resources\BureauResource\RelationManagers;
+use App\Models\Bureau;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -13,15 +13,15 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-class OfficeResource extends Resource
+class BureauResource extends Resource
 {
-    protected static ?string $model = Office::class;
+    protected static ?string $model = Bureau::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-building-office-2';
+    protected static ?string $navigationIcon = 'heroicon-o-building-office';
 
     protected static ?string $navigationGroup ='User Management';
 
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 2;
 
     public static function form(Form $form): Form
     {
@@ -74,16 +74,16 @@ class OfficeResource extends Resource
     public static function getRelations(): array
     {
         return [
-            RelationManagers\UsersRelationManager::class
+            //
         ];
     }
 
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListOffices::route('/'),
-            'create' => Pages\CreateOffice::route('/create'),
-            'edit' => Pages\EditOffice::route('/{record}/edit'),
+            'index' => Pages\ListBureaus::route('/'),
+            'create' => Pages\CreateBureau::route('/create'),
+            'edit' => Pages\EditBureau::route('/{record}/edit'),
         ];
     }
 }

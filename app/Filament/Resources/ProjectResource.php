@@ -33,7 +33,7 @@ class ProjectResource extends Resource
                 Forms\Components\TextInput::make('abbreviation')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\TextInput::make('focal_person')
+                Forms\Components\TextInput::make('head')
                     ->required()
                     ->maxLength(255),
             ]);
