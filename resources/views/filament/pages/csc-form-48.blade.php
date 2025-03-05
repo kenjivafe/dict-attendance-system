@@ -1,5 +1,5 @@
 <x-filament-panels::page>
-    <div class="flex flex-col xl:flex-row gap-8">
+    <div class="flex flex-col gap-8 xl:flex-row">
         <x-filament-panels::form class="flex xl:flex xl:w-1/2">
             {{ $this->form }}
         </x-filament-panels::form>
@@ -95,18 +95,27 @@
                     <tr>
                         <td colspan="7" style="height: 33px; text-align: left; font-style: italic; margin-top: 10px; font-size: 11px">I CERTIFY on my honor that the above is a true and correct report of the hours of work performed, record of which was made daily at the time of arrival and departure from office.</td>
                     </tr>
-                    <tr style="height: 11px;">
+                    <tr style="height: 11px"></tr>
+                    <tr style="height: 20px;">
                         <td colspan="2" style="text-align: left; font-weight: bold;"></td>
                         <td colspan="5" style="border-bottom: 2px solid black; text-align: left; font-weight: bold; text-align: center;">{{ mb_strtoupper(\App\Models\User::find($this->selectedUser)?->name) ?? '' }}</td>
                     </tr>
+                    <tr style="height: 11px">
+                        <td colspan="2"></td>
+                        <td colspan="5" style="font-size: 12px; font-style: italic; text-align: center;">(Signature of official or employee)</td>
+                    </tr>
                     <tr style="height: 6px; border-bottom: 3px solid black;"></tr>
-                    <tr style="height: 50px;">
+                    <tr>
+                        <td colspan="7" style="height: 33px; text-align: left; font-style: italic; margin-top: 10px; font-size: 11px">Verified as to Correctness</td>
+                    </tr>
+                    <tr style="height: 40px"></tr>
+                    <tr style="height: 11px;">
                         <td colspan="2" style="text-align: left; font-weight: bold;"></td>
-                        <td colspan="5" style="border-bottom: 2px solid black; text-align: left; font-weight: bold;"></td>
+                        <td colspan="5" style="border-bottom: 2px solid black; text-align: left; font-weight: bold; text-align: center;">{{ mb_strtoupper(\App\Models\User::find($this->selectedUser)?->immediate_supervisor) ?? '' }}</td>
                     </tr>
                     <tr style="height: 11px">
-                        <td colspan="5"></td>
-                        <td colspan="2" style="font-size: 12px; font-weight: bold; font-style: italic;">In-charge</td>
+                        <td colspan="2"></td>
+                        <td colspan="5" style="font-size: 12px; font-style: italic; text-align: center;">Immediate Supervisor</td>
                     </tr>
                 </table>
                 <table style="border-spacing: 0px; border-collapse: collapse; width: 48%; background-color: white; color: black; font-size:11px; font-family: Calibri">
@@ -197,18 +206,27 @@
                     <tr>
                         <td colspan="7" style="height: 33px; text-align: left; font-style: italic; margin-top: 10px; font-size: 11px">I CERTIFY on my honor that the above is a true and correct report of the hours of work performed, record of which was made daily at the time of arrival and departure from office.</td>
                     </tr>
-                    <tr style="height: 11px;">
+                    <tr style="height: 11px"></tr>
+                    <tr style="height: 20px;">
                         <td colspan="2" style="text-align: left; font-weight: bold;"></td>
                         <td colspan="5" style="border-bottom: 2px solid black; text-align: left; font-weight: bold; text-align: center;">{{ mb_strtoupper(\App\Models\User::find($this->selectedUser)?->name) ?? '' }}</td>
                     </tr>
+                    <tr style="height: 11px">
+                        <td colspan="2"></td>
+                        <td colspan="5" style="font-size: 12px; font-style: italic; text-align: center;">(Signature of official or employee)</td>
+                    </tr>
                     <tr style="height: 6px; border-bottom: 3px solid black;"></tr>
-                    <tr style="height: 50px;">
+                    <tr>
+                        <td colspan="7" style="height: 33px; text-align: left; font-style: italic; margin-top: 10px; font-size: 11px">Verified as to Correctness</td>
+                    </tr>
+                    <tr style="height: 40px"></tr>
+                    <tr style="height: 11px;">
                         <td colspan="2" style="text-align: left; font-weight: bold;"></td>
-                        <td colspan="5" style="border-bottom: 2px solid black; text-align: left; font-weight: bold;"></td>
+                        <td colspan="5" style="border-bottom: 2px solid black; text-align: left; font-weight: bold; text-align: center;">{{ mb_strtoupper(\App\Models\User::find($this->selectedUser)?->immediate_supervisor) ?? '' }}</td>
                     </tr>
                     <tr style="height: 11px">
-                        <td colspan="5"></td>
-                        <td colspan="2" style="font-size: 12px; font-weight: bold; font-style: italic;">In-charge</td>
+                        <td colspan="2"></td>
+                        <td colspan="5" style="font-size: 12px; font-style: italic; text-align: center;">Immediate Supervisor</td>
                     </tr>
                 </table>
             </div>

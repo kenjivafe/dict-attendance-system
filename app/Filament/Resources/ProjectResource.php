@@ -7,6 +7,7 @@ use App\Filament\Resources\ProjectResource\RelationManagers;
 use App\Models\Project;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Resources\RelationManagers\RelationGroup;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -19,45 +20,58 @@ class ProjectResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-briefcase';
 
-    protected static ?string $navigationGroup = 'User Management';
+    protected static ?string $navigationGroup = 'User Assignment';
 
     protected static ?int $navigationSort = 3;
 
     public static function form(Form $form): Form
     {
         return $form
-            ->schema([
-                Forms\Components\TextInput::make('name')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('abbreviation')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('head')
-                    ->required()
-                    ->maxLength(255),
-            ]);
+        ->schema([
+            Forms\Components\Section::make('Project Details')
+                ->description(fn ($livewire) =>
+                    $livewire instanceof Pages\EditProject
+                        ? 'This is the form section for the name, abbreviation and the head of the bureau.
+                            Below the form, is the list of all the employees under this bureau.'
+                        : 'This is the form section for the name, abbreviation and the head of the bureau.'
+                )
+                ->schema([
+                    Forms\Components\TextInput::make('name')
+                        ->required()
+                        ->maxLength(255)
+                        ->columnSpan(['default' => 2, 'sm' => 1,]),
+                    Forms\Components\TextInput::make('abbreviation')
+                        ->required()
+                        ->maxLength(255)
+                        ->columnSpan(['default' => 2, 'sm' => 1]),
+                    Forms\Components\TextInput::make('head')
+                        ->required()
+                        ->maxLength(255)
+                        ->columnSpan(['default' => 2, 'sm' => 1]),
+                    Forms\Components\Select::make('bureau_id')
+                        ->native(false)
+                        ->relationship('bureau', 'abbreviation')
+                        ->required()
+                        ->columnSpan(['default' => 2, 'sm' => 1]),
+                ])
+                ->aside('left')
+                ->columns(2)
+        ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('head')
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('name')
+                    ->label('Project')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('abbreviation')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('focal_person')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->defaultGroup('bureau.name')
             ->filters([
                 //
             ])
@@ -65,16 +79,16 @@ class ProjectResource extends Resource
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
+                // Tables\Actions\BulkActionGroup::make([
+                //     Tables\Actions\DeleteBulkAction::make(),
+                // ]),
             ]);
     }
 
     public static function getRelations(): array
     {
         return [
-            //
+            RelationManagers\UsersRelationManager::class
         ];
     }
 

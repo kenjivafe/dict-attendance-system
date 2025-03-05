@@ -34,7 +34,9 @@ class AdminPanelProvider extends PanelProvider
             ->sidebarCollapsibleOnDesktop()
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
-            ->brandLogo(asset('images/DICT_LOGO.png'))
+            ->brandLogo(asset('images/DICT Logo.png'))
+            ->darkModeBrandLogo(asset('images/DICT Logo Dark.png'))
+            ->favicon(asset('images/favicon.png'))
             ->brandLogoHeight('4rem')
             ->pages([
                 Pages\Dashboard::class,

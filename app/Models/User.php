@@ -63,6 +63,6 @@ class User extends Authenticatable
      */
     public function getImmediateSupervisorAttribute()
     {
-        return $this->office?->focal_person ?? $this->project?->focal_person ?? ' ';
+        return $this->office?->head ?? $this->project?->head ?? ' ';
     }
 }

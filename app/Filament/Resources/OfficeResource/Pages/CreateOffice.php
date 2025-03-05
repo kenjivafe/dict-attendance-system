@@ -9,4 +9,9 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateOffice extends CreateRecord
 {
     protected static string $resource = OfficeResource::class;
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
+    }
 }

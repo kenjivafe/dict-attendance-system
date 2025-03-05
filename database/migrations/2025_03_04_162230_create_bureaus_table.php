@@ -18,6 +18,10 @@ return new class extends Migration
             $table->string('head');
             $table->timestamps();
         });
+
+        Schema::table('projects', function (Blueprint $table) {
+            $table->foreignId('bureau_id')->nullable()->constrained()->onDelete('set null');
+        });
     }
 
     /**

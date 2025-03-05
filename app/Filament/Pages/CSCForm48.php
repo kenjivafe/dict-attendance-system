@@ -575,7 +575,7 @@ class CSCForm48 extends Page
         $sheet->getStyle('B54')->getAlignment()->setVertical('center')->setHorizontal('left');
         $sheet->getStyle('B54')->getFont()->setItalic(true)->setSize(9);
         $sheet->mergeCells('C56:H56');
-        $sheet->setCellValue('C56', mb_strtoupper('Engr. Ronald S. Bariuan'));
+        $sheet->setCellValue('C56', mb_strtoupper($user->immediate_supervisor));
         $sheet->getStyle('C56')->getAlignment()->setHorizontal('center');
         $sheet->getStyle('C56')->getFont()->setBold(true)->setSize('11');
         $sheet->mergeCells('C57:H57');
@@ -588,7 +588,7 @@ class CSCForm48 extends Page
         $sheet->getStyle('K54')->getAlignment()->setVertical('center')->setHorizontal('left');
         $sheet->getStyle('K54')->getFont()->setItalic(true)->setSize(9);
         $sheet->mergeCells('L56:Q56');
-        $sheet->setCellValue('L56', mb_strtoupper('Engr. Ronald S. Bariuan'));
+        $sheet->setCellValue('L56', mb_strtoupper($user->immediate_supervisor));
         $sheet->getStyle('L56')->getAlignment()->setHorizontal('center');
         $sheet->getStyle('L56')->getFont()->setBold(true)->setSize('11');
         $sheet->mergeCells('L57:Q57');

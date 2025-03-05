@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\OfficeResource\RelationManagers;
+namespace App\Filament\Resources\BureauResource\RelationManagers;
 
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -10,46 +10,39 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-class UsersRelationManager extends RelationManager
+class ProjectsRelationManager extends RelationManager
 {
-    protected static string $relationship = 'users';
+    protected static string $relationship = 'projects';
 
     public function form(Form $form): Form
     {
         return $form
             ->schema([
                 Forms\Components\TextInput::make('name')
-                    ->required(),
-                Forms\Components\TextInput::make('email')
                     ->required()
-                    ->email(),
-                Forms\Components\TextInput::make('password')
+                    ->maxLength(255)
+                    ->columnSpan(['default' => 2, 'sm' => 1,]),
+                Forms\Components\TextInput::make('abbreviation')
                     ->required()
-                    ->password(),
-                Forms\Components\Select::make('roles')
+                    ->maxLength(255)
+                    ->columnSpan(['default' => 2, 'sm' => 1]),
+                Forms\Components\TextInput::make('head')
                     ->required()
-                    ->relationship('roles', 'name')
-                    ->multiple()
-                    ->preload()
-                    ->searchable(),
-            ]);
+                    ->maxLength(255)
+                    ->columnSpan(2),
+            ])->columns(2);
     }
 
     public function table(Table $table): Table
     {
         return $table
             ->recordTitleAttribute('name')
+            ->heading('Projects')
+            ->description('Manage the projects for this bureau.')
             ->columns([
+                Tables\Columns\TextColumn::make('head'),
                 Tables\Columns\TextColumn::make('name'),
-                Tables\Columns\TextColumn::make('email'),
-                // TextColumn::make('project.name')->sortable()->searchable(),
-                Tables\Columns\TextColumn::make('roles.name')
-                    ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'super_admin' => 'danger',
-                        'admin' => 'warning',
-                        default => 'primary',
-                    }),
+                Tables\Columns\TextColumn::make('abbreviation'),
             ])
             ->filters([
                 //
@@ -57,11 +50,11 @@ class UsersRelationManager extends RelationManager
             ->headerActions([
                 Tables\Actions\ActionGroup::make([
                     Tables\Actions\AssociateAction::make()
-                        ->label('Existing Employee')
+                        ->label('Existing Project')
                         ->preloadRecordSelect(),
                     Tables\Actions\CreateAction::make()
-                        ->label('New Employee'),
-                ])->button()->label('Add Employee')->icon('heroicon-o-plus'),
+                        ->label('New Project'),
+                ])->button()->label('Add Project')->icon('heroicon-o-plus'),
             ])
             ->actions([
                 Tables\Actions\DissociateAction::make()->label('Remove'),

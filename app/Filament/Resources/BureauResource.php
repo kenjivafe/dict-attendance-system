@@ -19,7 +19,7 @@ class BureauResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-building-office';
 
-    protected static ?string $navigationGroup ='User Management';
+    protected static ?string $navigationGroup ='User Assignment';
 
     protected static ?int $navigationSort = 2;
 
@@ -27,15 +27,29 @@ class BureauResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('name')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('abbreviation')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('head')
-                    ->required()
-                    ->maxLength(255),
+                Forms\Components\Section::make('Bureau Details')
+                    ->description(fn ($livewire) =>
+                        $livewire instanceof Pages\EditBureau
+                            ? 'This is the form section for the name, abbreviation and the head of the bureau.
+                                Below the form, is the list of all the employees under this bureau.'
+                            : 'This is the form section for the name, abbreviation and the head of the bureau.'
+                    )
+                    ->schema([
+                        Forms\Components\TextInput::make('name')
+                            ->required()
+                            ->maxLength(255)
+                            ->columnSpan(['default' => 2, 'sm' => 1,]),
+                        Forms\Components\TextInput::make('abbreviation')
+                            ->required()
+                            ->maxLength(255)
+                            ->columnSpan(['default' => 2, 'sm' => 1]),
+                        Forms\Components\TextInput::make('head')
+                            ->required()
+                            ->maxLength(255)
+                            ->columnSpan(2),
+                    ])
+                    ->aside('left')
+                    ->columns(2)
             ]);
     }
 
@@ -43,20 +57,13 @@ class BureauResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('head')
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('name')
+                    ->label('Bureau')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('abbreviation')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('head')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 //
@@ -65,16 +72,16 @@ class BureauResource extends Resource
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
+                // Tables\Actions\BulkActionGroup::make([
+                //     Tables\Actions\DeleteBulkAction::make(),
+                // ]),
             ]);
     }
 
     public static function getRelations(): array
     {
         return [
-            //
+            RelationManagers\ProjectsRelationManager::class
         ];
     }
 

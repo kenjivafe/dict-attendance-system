@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\OfficeResource\RelationManagers;
+namespace App\Filament\Resources\ProjectResource\RelationManagers;
 
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -19,19 +19,8 @@ class UsersRelationManager extends RelationManager
         return $form
             ->schema([
                 Forms\Components\TextInput::make('name')
-                    ->required(),
-                Forms\Components\TextInput::make('email')
                     ->required()
-                    ->email(),
-                Forms\Components\TextInput::make('password')
-                    ->required()
-                    ->password(),
-                Forms\Components\Select::make('roles')
-                    ->required()
-                    ->relationship('roles', 'name')
-                    ->multiple()
-                    ->preload()
-                    ->searchable(),
+                    ->maxLength(255),
             ]);
     }
 
@@ -41,15 +30,6 @@ class UsersRelationManager extends RelationManager
             ->recordTitleAttribute('name')
             ->columns([
                 Tables\Columns\TextColumn::make('name'),
-                Tables\Columns\TextColumn::make('email'),
-                // TextColumn::make('project.name')->sortable()->searchable(),
-                Tables\Columns\TextColumn::make('roles.name')
-                    ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'super_admin' => 'danger',
-                        'admin' => 'warning',
-                        default => 'primary',
-                    }),
             ])
             ->filters([
                 //
@@ -68,6 +48,7 @@ class UsersRelationManager extends RelationManager
             ])
             ->bulkActions([
                 // Tables\Actions\BulkActionGroup::make([
+                //     Tables\Actions\DissociateBulkAction::make(),
                 //     Tables\Actions\DeleteBulkAction::make(),
                 // ]),
             ]);

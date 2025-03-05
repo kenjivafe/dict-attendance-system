@@ -6,12 +6,9 @@ use App\Filament\Resources\UserResource\Pages;
 use App\Filament\Resources\UserResource\RelationManagers;
 use App\Models\User;
 use Filament\Forms;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -28,10 +25,19 @@ class UserResource extends Resource
     {
         return $form
             ->schema([
-                TextInput::make('name'),
-                TextInput::make('email')->email(),
-                TextInput::make('password')->password(),
-                Select::make('roles')
+                Forms\Components\TextInput::make('name')
+                    ->required(),
+                Forms\Components\TextInput::make('email')
+                    ->email()
+                    ->unique(ignoreRecord: true) // Allow unique validation except for the current record
+                    ->required(),
+                Forms\Components\TextInput::make('password')
+                    ->password()
+                    ->dehydrateStateUsing(fn ($state) => filled($state) ? bcrypt($state) : null) // Hash password only if entered
+                    ->dehydrated(fn ($state) => filled($state)) // Only save if not empty
+                    ->required(fn ($livewire) => $livewire instanceof Pages\CreateUser) // Required only on create
+                    ->maxLength(255),
+                Forms\Components\Select::make('roles')
                     ->relationship('roles', 'name')
                     ->multiple()
                     ->preload()
@@ -43,9 +49,9 @@ class UserResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('name'),
-                TextColumn::make('email'),
-                TextColumn::make('roles.name')->badge()
+                Tables\Columns\TextColumn::make('name'),
+                Tables\Columns\TextColumn::make('email'),
+                Tables\Columns\TextColumn::make('roles.name')->badge()
             ])
             ->filters([
                 //

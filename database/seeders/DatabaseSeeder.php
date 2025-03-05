@@ -43,7 +43,9 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             DtrSeeder::class,
-            OfficesAndProjectsSeeder::class,
+            OfficeSeeder::class,
+            BureauSeeder::class,
+            ProjectSeeder::class,
         ]);
     }
 }
