@@ -9,7 +9,7 @@
         "php": "^8.2",
         "barryvdh/laravel-dompdf": "^3.1",
         "bezhansalleh/filament-shield": "^3.3",
-        "dotswan/filament-map-picker": "^1.8",
+        "cheesegrits/filament-google-maps": "^3.0",
         "filament/filament": "^3.2",
         "laravel/breeze": "^2.3",
         "laravel/framework": "^11.31",

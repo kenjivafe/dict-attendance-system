@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\CheckpointResource\Pages;
 use App\Filament\Resources\CheckpointResource\RelationManagers;
+use App\Filament\Resources\CheckpointResource\Widgets\CheckpointMap;
 use App\Models\Checkpoint;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -18,53 +19,39 @@ class CheckpointResource extends Resource
 {
     protected static ?string $model = Checkpoint::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-map-pin';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                \Filament\Forms\Components\Section::make([
+                \Filament\Forms\Components\Group::make([
                     \Filament\Forms\Components\TextInput::make('name')
                         ->required()
                         ->label('Checkpoint Name'),
-                    \Filament\Forms\Components\TextInput::make('latitude')
+                    \Filament\Forms\Components\TextInput::make('lat')
+                        ->label('Latitude')
                         ->readOnly(),
-                    \Filament\Forms\Components\TextInput::make('longitude')
+                    \Filament\Forms\Components\TextInput::make('lng')
+                        ->label('Longitude')
                         ->readOnly(),
                 ])->columnSpan(1),
-                \Dotswan\MapPicker\Fields\Map::make('shapes')
-                    ->label('Checkpoint Area')
-                    // ->defaultLocation(latitude: 17.621678353601, longitude: 121.72208070651)
-                    ->clickable(true)
-                    ->geoMan(true)
-                    ->drawCircle(true)
-                    ->drawPolygon(true)
-                    ->boundaries(true, 15.8, 120.3, 21.2, 122.5)
-                    ->minZoom(7)
-                    ->afterStateUpdated(function (Set $set, ?array $state): void {
-                        if ($state) {
-                            $set('latitude', $state['lat']);
-                            $set('longitude', $state['lng']);
-                            // $set('shapes', $state['shapes'] ?? []);
-                        }
-                    })
-                    ->afterStateHydrated(function ($state, ?object $record, Set $set): void {
-                        if ($record) {
-                            $set('location', [
-                                'lat' => $record->latitude ?? null,
-                                'lng' => $record->longitude ?? null,
-                                // 'shapes' => $record->shapes ?? [],
-                            ]);
-                        }
-                    })
-                    ->showMarker(true)
-                    ->clickable(true)
-                    // ->tilesUrl("https://tile.openstreetmap.de/{z}/{x}/{y}.png")
-                    ->extraStyles([
-                        'min-height: 50vh',
-                        'border-radius: 10px'
+                \Cheesegrits\FilamentGoogleMaps\Fields\Map::make('location')
+                    ->label('Checkpoint Location')
+                    ->mapControls([
+                        'mapTypeControl'    => true,
+                        'scaleControl'      => true,
+                        'streetViewControl' => true,
+                        'rotateControl'     => true,
+                        'fullscreenControl' => true,
+                        'searchBoxControl'  => false, // creates geocomplete field inside map
+                        'zoomControl'       => false,
                     ])
+                    ->height(fn () => '400px') // map height (width is controlled by Filament options)
+                    ->defaultZoom(8) // default zoom level when opening form
+                    ->defaultLocation([17.621510, 121.721800]) // default for new forms
+                    ->draggable() // allow dragging to move marker
+                    ->clickable(true) // allow clicking to move marker
             ]);
     }
 
@@ -72,8 +59,9 @@ class CheckpointResource extends Resource
     {
         return $table
             ->columns([
-                \Filament\Tables\Columns\TextColumn::make('latitude'),
-                \Filament\Tables\Columns\TextColumn::make('longitude'),
+                \Filament\Tables\Columns\TextColumn::make('name'),
+                \Filament\Tables\Columns\TextColumn::make('lat'),
+                \Filament\Tables\Columns\TextColumn::make('lng'),
             ])
             ->filters([
                 //
@@ -101,6 +89,13 @@ class CheckpointResource extends Resource
             'index' => Pages\ListCheckpoints::route('/'),
             'create' => Pages\CreateCheckpoint::route('/create'),
             'edit' => Pages\EditCheckpoint::route('/{record}/edit'),
+        ];
+    }
+
+    public static function getWidgets(): array
+    {
+        return [
+            CheckpointMap::class
         ];
     }
 }

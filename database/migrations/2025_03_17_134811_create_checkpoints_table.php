@@ -14,9 +14,8 @@ return new class extends Migration
         Schema::create('checkpoints', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->double('latitude')->nullable();
-            $table->double('longitude')->nullable();
-            $table->json('shapes')->nullable(); // Stores polygon/circle data
+            $table->double('lat')->nullable();
+            $table->double('lng')->nullable();
             $table->timestamps();
         });
     }
