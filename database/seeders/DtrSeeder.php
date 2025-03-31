@@ -15,7 +15,7 @@ class DtrSeeder extends Seeder
     public function run(): void
     {
         $startDate = Carbon::parse('2025-02-01', 'Asia/Manila'); // Start date
-        $endDate = Carbon::parse('2025-02-28', 'Asia/Manila'); // End date
+        $endDate = Carbon::yesterday('Asia/Manila'); // End date is yesterday
         $userIds = [2, 3, 4, 5, 6, 7]; // Excluding user_id 1 (admin)
 
         while ($startDate->lte($endDate)) {
