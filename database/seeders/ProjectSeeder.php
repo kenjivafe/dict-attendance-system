@@ -17,14 +17,12 @@ class ProjectSeeder extends Seeder
             'name' => 'e-Government',
             'abbreviation' => 'eGov',
             'head' => 'Engr. Ronald S. Bariuan',
-            'bureau_id' => '1'
         ]);
 
         Project::create([
             'name' => 'Electronic Local Government Unit',
             'abbreviation' => 'eLGU',
             'head' => 'Engr. Ronald S. Bariuan',
-            'bureau_id' => '1'
         ]);
     }
 }

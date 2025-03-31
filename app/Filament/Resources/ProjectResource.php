@@ -31,9 +31,8 @@ class ProjectResource extends Resource
             Forms\Components\Section::make('Project Details')
                 ->description(fn ($livewire) =>
                     $livewire instanceof Pages\EditProject
-                        ? 'This is the form section for the name, abbreviation and the head of the bureau.
-                            Below the form, is the list of all the employees under this bureau.'
-                        : 'This is the form section for the name, abbreviation and the head of the bureau.'
+                        ? 'This is the form section for the project details.'
+                        : 'This is the form section for the project details.'
                 )
                 ->schema([
                     Forms\Components\TextInput::make('name')
@@ -47,11 +46,6 @@ class ProjectResource extends Resource
                     Forms\Components\TextInput::make('head')
                         ->required()
                         ->maxLength(255)
-                        ->columnSpan(['default' => 2, 'sm' => 1]),
-                    Forms\Components\Select::make('bureau_id')
-                        ->native(false)
-                        ->relationship('bureau', 'abbreviation')
-                        ->required()
                         ->columnSpan(['default' => 2, 'sm' => 1]),
                 ])
                 ->aside('left')
@@ -71,7 +65,6 @@ class ProjectResource extends Resource
                 Tables\Columns\TextColumn::make('abbreviation')
                     ->searchable(),
             ])
-            ->defaultGroup('bureau.name')
             ->filters([
                 //
             ])

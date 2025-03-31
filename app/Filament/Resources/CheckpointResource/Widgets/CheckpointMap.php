@@ -14,9 +14,9 @@ class CheckpointMap extends MapWidget
 
     protected static ?bool $clustering = true;
 
-    protected static ?bool $fitToBounds = true;
+    protected static ?bool $fitToBounds = false;
 
-    protected static ?int $zoom = 12;
+    protected static ?int $zoom = 10;
 
     protected int | string | array $columnSpan = 'full';
 

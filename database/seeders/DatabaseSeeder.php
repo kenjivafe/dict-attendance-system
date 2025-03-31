@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Checkpoint;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -44,8 +45,9 @@ class DatabaseSeeder extends Seeder
         $this->call([
             DtrSeeder::class,
             OfficeSeeder::class,
-            BureauSeeder::class,
             ProjectSeeder::class,
         ]);
+
+        Checkpoint::create(['name' => 'DICT Region II', 'lat' => 17.621510, 'lng' => 121.721800]);
     }
 }

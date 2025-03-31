@@ -14,9 +14,4 @@ class Project extends Model
     {
         return $this->hasMany(User::class);
     }
-
-    public function bureau(): BelongsTo
-    {
-        return $this->belongsTo(Bureau::class);
-    }
 }
