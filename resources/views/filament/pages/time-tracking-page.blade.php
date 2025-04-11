@@ -27,24 +27,32 @@
         </div>
 
         <div class="grid grid-cols-1 gap-4 mt-6 mb-6 md:grid-cols-2">
-            <div class="p-4 text-center bg-white rounded-lg shadow dark:bg-gray-800">
-                <h2 class="mb-2 text-lg font-bold">Time In (AM)</h2>
-                <span>{{ $this->getTodayTimeEntry('time_in_am') }}</span>
+            <div class="p-4 text-center bg-white rounded-lg shadow transition-colors duration-300 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700">
+                <h2 class="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-200">Time In (AM)</h2>
+                <div class="text-2xl font-bold {{ $this->getTodayTimeEntry('time_in_am') !== 'Not recorded' ? 'text-green-600 dark:text-green-400' : 'text-gray-400 dark:text-gray-500' }}">
+                    {{ $this->getTodayTimeEntry('time_in_am') }}
+                </div>
             </div>
 
-            <div class="p-4 text-center bg-white rounded-lg shadow dark:bg-gray-800">
-                <h2 class="mb-2 text-lg font-bold">Time Out (AM)</h2>
-                <span>{{ $this->getTodayTimeEntry('time_out_am') }}</span>
+            <div class="p-4 text-center bg-white rounded-lg shadow transition-colors duration-300 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700">
+                <h2 class="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-200">Time Out (AM)</h2>
+                <div class="text-2xl font-bold {{ $this->getTodayTimeEntry('time_out_am') !== 'Not recorded' ? 'text-green-600 dark:text-green-400' : 'text-gray-400 dark:text-gray-500' }}">
+                    {{ $this->getTodayTimeEntry('time_out_am') }}
+                </div>
             </div>
 
-            <div class="p-4 text-center bg-white rounded-lg shadow dark:bg-gray-800">
-                <h2 class="mb-2 text-lg font-bold">Time In (PM)</h2>
-                <span>{{ $this->getTodayTimeEntry('time_in_pm') }}</span>
+            <div class="p-4 text-center bg-white rounded-lg shadow transition-colors duration-300 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700">
+                <h2 class="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-200">Time In (PM)</h2>
+                <div class="text-2xl font-bold {{ $this->getTodayTimeEntry('time_in_pm') !== 'Not recorded' ? 'text-green-600 dark:text-green-400' : 'text-gray-400 dark:text-gray-500' }}">
+                    {{ $this->getTodayTimeEntry('time_in_pm') }}
+                </div>
             </div>
 
-            <div class="p-4 text-center bg-white rounded-lg shadow dark:bg-gray-800">
-                <h2 class="mb-2 text-lg font-bold">Time Out (PM)</h2>
-                <span>{{ $this->getTodayTimeEntry('time_out_pm') }}</span>
+            <div class="p-4 text-center bg-white rounded-lg shadow transition-colors duration-300 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700">
+                <h2 class="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-200">Time Out (PM)</h2>
+                <div class="text-2xl font-bold {{ $this->getTodayTimeEntry('time_out_pm') !== 'Not recorded' ? 'text-green-600 dark:text-green-400' : 'text-gray-400 dark:text-gray-500' }}">
+                    {{ $this->getTodayTimeEntry('time_out_pm') }}
+                </div>
             </div>
         </div>
 
