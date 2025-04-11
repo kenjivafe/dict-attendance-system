@@ -7,12 +7,13 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Attendance;
 use Filament\Notifications\Notification;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Http;
 
 class TimeTrackingPage extends Page
 {
     protected static ?string $navigationIcon = 'heroicon-o-clock';
 
-    protected static ?string $title = 'Time Tracking';
+    protected static ?string $title = 'Time Trackings';
 
     protected static string $view = 'filament.pages.time-tracking-page';
 
@@ -102,15 +103,58 @@ class TimeTrackingPage extends Page
         return null;
     }
 
+    public function getNextTimeEntryLabel()
+    {
+        $attendance = Attendance::where('user_id', Auth::id())
+            ->whereDate('date', now()->toDateString())
+            ->first();
+
+        $timeFields = [
+            'time_in_am' => 'Time In (AM)',
+            'time_out_am' => 'Time Out (AM)',
+            'time_in_pm' => 'Time In (PM)',
+            'time_out_pm' => 'Time Out (PM)'
+        ];
+
+        foreach ($timeFields as $field => $label) {
+            if (is_null($attendance?->$field)) {
+                return $label;
+            }
+        }
+
+        return 'All entries recorded';
+    }
+
     public function saveLocation($latitude, $longitude)
     {
         $this->latitude = $latitude;
         $this->longitude = $longitude;
 
-        Notification::make()
-            ->title('Location Saved')
-            ->body("Latitude: {$latitude}, Longitude: {$longitude}")
-            ->success()
-            ->send();
+        // Use Google Geocoding API to get the address
+        $apiKey = config('services.google.geocoding_api_key');
+        $url = "https://maps.googleapis.com/maps/api/geocode/json?latlng={$latitude},{$longitude}&key={$apiKey}";
+
+        try {
+            $response = Http::get($url);
+            $data = $response->json();
+
+            $address = 'Unknown Location';
+            if (!empty($data['results']) && isset($data['results'][0]['formatted_address'])) {
+                $address = $data['results'][0]['formatted_address'];
+            }
+
+            Notification::make()
+                ->title('You are in: ' . $address)
+                ->body("Latitude: {$latitude}, Longitude: {$longitude}")
+                ->success()
+                ->send();
+        } catch (\Exception $e) {
+            // Fallback to default notification if geocoding fails
+            Notification::make()
+                ->title('Location Saved')
+                ->body("Latitude: {$latitude}, Longitude: {$longitude}")
+                ->warning()
+                ->send();
+        }
     }
 }

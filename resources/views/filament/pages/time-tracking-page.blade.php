@@ -16,13 +16,36 @@
                 </div>
             </div>
             <div class="text-center">
+                @php
+                    $nextTimeEntryLabel = $this->getNextTimeEntryLabel();
+                    $isAllRecorded = $nextTimeEntryLabel === 'All entries recorded';
+                @endphp
                 <button
                     x-data
                     x-on:click="$wire.recordTimeEntry()"
-                    class="px-4 py-2 font-bold text-black bg-blue-500 rounded dark:text-white hover:bg-blue-700"
+                    class="px-4 py-2 font-bold text-black rounded-lg {{ $isAllRecorded ? 'bg-gray-300 dark:bg-gray-600 cursor-not-allowed' : 'bg-primary-500 dark:text-white hover:bg-primary-700' }}"
+                    {{ $isAllRecorded ? 'disabled' : '' }}
                 >
-                    Record Time Entry
+                    {{ $nextTimeEntryLabel }}
                 </button>
+
+
+
+                <div class="text-center">
+                    <button
+                        id="getLocationBtn"
+                        class="relative px-4 py-2 text-sm text-gray-700 bg-green-500 rounded dark:text-gray-500 hover:bg-green-700"
+                    >
+                        <span id="locationBtnText">Check Location</span>
+                        <div id="locationLoadingSpinner" class="flex hidden absolute inset-0 justify-center items-center">
+                            <svg class="mr-2 w-5 h-5 animate-spin text-gray-5 00" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="white" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span class="mx-1 text-gray-500">Checking</span>
+                        </div>
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -56,15 +79,6 @@
             </div>
         </div>
 
-
-        <div class="text-center">
-            <button
-                id="getLocationBtn"
-                class="px-4 py-2 font-bold text-white bg-green-500 rounded hover:bg-green-700"
-            >
-                Get Current Location
-            </button>
-        </div>
     </div>
 
     <script>
@@ -95,19 +109,43 @@
         setInterval(updateLiveClock, 1000);
 
         document.getElementById('getLocationBtn').addEventListener('click', function() {
+            // Show loading spinner
+            const locationBtnText = document.getElementById('locationBtnText');
+            const locationLoadingSpinner = document.getElementById('locationLoadingSpinner');
+
+            // Disable button and show spinner
+            this.disabled = true;
+            locationBtnText.classList.add('invisible');
+            locationLoadingSpinner.classList.remove('hidden');
+
             if ('geolocation' in navigator) {
                 navigator.geolocation.getCurrentPosition(function(position) {
                     const latitude = position.coords.latitude;
                     const longitude = position.coords.longitude;
 
                     // Use Livewire to save location
-                    @this.call('saveLocation', latitude, longitude);
+                    @this.call('saveLocation', latitude, longitude).then(() => {
+                        // Hide loading spinner
+                        locationBtnText.classList.remove('invisible');
+                        locationLoadingSpinner.classList.add('hidden');
+                        document.getElementById('getLocationBtn').disabled = false;
+                    });
                 }, function(error) {
                     console.error('Error getting location:', error.message);
                     alert('Unable to retrieve your location: ' + error.message);
+
+                    // Hide loading spinner
+                    locationBtnText.classList.remove('invisible');
+                    locationLoadingSpinner.classList.add('hidden');
+                    document.getElementById('getLocationBtn').disabled = false;
                 });
             } else {
                 alert('Geolocation is not supported by your browser');
+
+                // Hide loading spinner
+                locationBtnText.classList.remove('invisible');
+                locationLoadingSpinner.classList.add('hidden');
+                document.getElementById('getLocationBtn').disabled = false;
             }
         });
     </script>
