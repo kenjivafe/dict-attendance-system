@@ -18,13 +18,16 @@ class TimeTrackingPage extends Page
 
     public $latitude = null;
     public $longitude = null;
+    public $attendance = null;
 
     public function mount()
     {
-        // Any initial setup can be done here
+        $this->attendance = Attendance::where('user_id', Auth::id())
+            ->whereDate('date', now()->toDateString())
+            ->first();
     }
 
-    public function recordTimeEntry($type)
+    public function recordTimeEntry()
     {
         // Validate that a user is logged in
         if (!Auth::check()) {
@@ -36,28 +39,67 @@ class TimeTrackingPage extends Page
             return;
         }
 
-        // Create attendance record
-        try {
-            $attendance = Attendance::create([
+        // Find or create today's attendance record
+        $attendance = Attendance::firstOrCreate(
+            [
                 'user_id' => Auth::id(),
-                'type' => $type,
-                'time' => now(),
-                'latitude' => $this->latitude,
-                'longitude' => $this->longitude
-            ]);
+                'date' => now()->toDateString(),
+            ]
+        );
+
+        // Determine which time field to update
+        $timeFieldToUpdate = $this->determineNextTimeField($attendance);
+
+        if ($timeFieldToUpdate) {
+            $attendance->$timeFieldToUpdate = now();
+            $attendance->save();
+
+            // Update the local attendance property
+            $this->attendance = $attendance;
 
             Notification::make()
                 ->title('Time Entry Recorded')
-                ->body("Successfully recorded {$type}")
+                ->body("Successfully recorded {$timeFieldToUpdate}")
                 ->success()
                 ->send();
-        } catch (\Exception $e) {
+        } else {
             Notification::make()
-                ->title('Error Recording Time')
-                ->body('Unable to record time entry: ' . $e->getMessage())
-                ->danger()
+                ->title('Time Entry Error')
+                ->body('All time entries for today have been recorded.')
+                ->warning()
                 ->send();
         }
+    }
+
+    public function getTodayTimeEntry($field)
+    {
+        $attendance = Attendance::where('user_id', Auth::id())
+            ->whereDate('date', now()->toDateString())
+            ->first();
+
+        if ($attendance && $attendance->$field) {
+            return \Carbon\Carbon::parse($attendance->$field)->format('H:i:s');
+        }
+
+        return 'Not recorded';
+    }
+
+    private function determineNextTimeField($attendance)
+    {
+        $timeFields = [
+            'time_in_am',
+            'time_out_am',
+            'time_in_pm',
+            'time_out_pm'
+        ];
+
+        foreach ($timeFields as $field) {
+            if (is_null($attendance->$field)) {
+                return $field;
+            }
+        }
+
+        return null;
     }
 
     public function saveLocation($latitude, $longitude)

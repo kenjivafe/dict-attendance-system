@@ -21,8 +21,6 @@ return new class extends Migration
             $table->time('time_out_pm')->nullable();
             $table->integer('undertime_hours')->default(0);
             $table->integer('undertime_minutes')->default(0);
-            $table->decimal('latitude', 10, 8)->nullable();
-            $table->decimal('longitude', 11, 8)->nullable();
             $table->timestamps();
         });
     }

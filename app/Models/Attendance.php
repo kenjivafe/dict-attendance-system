@@ -12,15 +12,12 @@ class Attendance extends Model
     protected $fillable = [
         'user_id',
         'date',
-        'time_in_am', 
+        'time_in_am',
         'time_out_am',
-        'time_in_pm', 
+        'time_in_pm',
         'time_out_pm',
-        'undertime_hours', 
+        'undertime_hours',
         'undertime_minutes',
-        'checkpoint_id',
-        'latitude',
-        'longitude'
     ];
 
     protected $appends = ['computed_undertime'];
