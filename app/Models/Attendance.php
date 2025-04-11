@@ -10,10 +10,17 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Attendance extends Model
 {
     protected $fillable = [
-        'date', 'user_id',
-        'time_in_am', 'time_out_am',
-        'time_in_pm', 'time_out_pm',
-        'undertime_hours', 'undertime_minutes'
+        'user_id',
+        'date',
+        'time_in_am', 
+        'time_out_am',
+        'time_in_pm', 
+        'time_out_pm',
+        'undertime_hours', 
+        'undertime_minutes',
+        'checkpoint_id',
+        'latitude',
+        'longitude'
     ];
 
     protected $appends = ['computed_undertime'];
@@ -62,6 +69,11 @@ class Attendance extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function checkpoint(): BelongsTo
+    {
+        return $this->belongsTo(Checkpoint::class);
     }
 
     protected function month(): Attribute

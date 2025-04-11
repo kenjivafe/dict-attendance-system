@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\AttendanceResource\Pages;
 use App\Filament\Resources\AttendanceResource\RelationManagers;
 use App\Models\Attendance;
+use DiogoGPinto\GeolocateMe\Concerns\HasGeolocation;
 use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\TimePicker;
@@ -24,6 +25,7 @@ use Illuminate\Support\Facades\Auth;
 
 class AttendanceResource extends Resource
 {
+    use HasGeolocation;
     protected static ?string $model = Attendance::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
@@ -135,6 +137,7 @@ class AttendanceResource extends Resource
                             ->send();
                     }),
 
+                Tables\Actions\DeleteAction::make(),
                 Tables\Actions\EditAction::make(),
             ]);
     }

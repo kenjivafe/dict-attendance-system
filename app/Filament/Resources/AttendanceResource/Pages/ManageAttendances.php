@@ -25,22 +25,9 @@ class ManageAttendances extends ManageRecords
             Actions\Action::make('Time In Today')
                 ->icon('heroicon-o-clock')
                 ->color('primary')
-                ->action(function () {
-                    Attendance::create([
-                        'user_id' => Auth::id(),
-                        'date' => today(),
-                        'time_in_am' => now(),
-                    ]);
-
-                    // Send Filament success notification
-                    Notification::make()
-                        ->title('Time-in recorded successfully!')
-                        ->success()
-                        ->send();
-
-                    // Refresh the page using JavaScript
-                    return redirect(request()->header('Referer'));
-                })
+                ->modalContent(fn () => view('livewire.location-tracker'))
+                ->modalSubmitAction(false)
+                ->modalCancelAction(false)
         ];
     }
 }
