@@ -17,8 +17,8 @@ class Checkpoint extends Model
 
      protected $fillable = [
         'name',
-        'latitude',
-        'longitude',
+        'lat',
+        'lng',
         'location',
     ];
 

@@ -5,6 +5,7 @@ namespace App\Filament\Pages;
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Attendance;
+use App\Models\Checkpoint;
 use Filament\Notifications\Notification;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
@@ -40,6 +41,29 @@ class TimeTrackingPage extends Page
             return;
         }
 
+        // Validate location
+        if (!$this->latitude || !$this->longitude) {
+            Notification::make()
+                ->title('Location Required')
+                ->body('Please get your location before recording time.')
+                ->warning()
+                ->send();
+            return;
+        }
+
+        // Find the nearest checkpoint
+        $nearestCheckpoint = $this->findNearestCheckpoint($this->latitude, $this->longitude);
+
+        // Validate location proximity
+        if (!$nearestCheckpoint) {
+            Notification::make()
+                ->title('Invalid Location')
+                ->body('You are not near any registered checkpoint.')
+                ->danger()
+                ->send();
+            return;
+        }
+
         // Find or create today's attendance record
         $attendance = Attendance::firstOrCreate(
             [
@@ -60,7 +84,7 @@ class TimeTrackingPage extends Page
 
             Notification::make()
                 ->title('Time Entry Recorded')
-                ->body("Successfully recorded {$timeFieldToUpdate}")
+                ->body("Successfully recorded {$timeFieldToUpdate} at {$nearestCheckpoint->name}")
                 ->success()
                 ->send();
         } else {
@@ -125,6 +149,83 @@ class TimeTrackingPage extends Page
         return 'All entries recorded';
     }
 
+    private function findNearestCheckpoint($latitude, $longitude)
+    {
+        // Earth's radius in kilometers
+        $earthRadius = 6371;
+
+        // Get all checkpoints
+        $checkpoints = Checkpoint::whereNotNull('lat')->whereNotNull('lng')->get();
+
+        // Prepare a log of checkpoint calculations
+        $checkpointLog = [];
+
+        // Find the nearest checkpoint within a reasonable distance
+        $nearestCheckpoint = $checkpoints->map(function ($checkpoint) use ($latitude, $longitude, $earthRadius, &$checkpointLog) {
+            // Haversine formula to calculate distance
+            $latDiff = deg2rad($checkpoint->lat - $latitude);
+            $lonDiff = deg2rad($checkpoint->lng - $longitude);
+            $a = sin($latDiff/2) * sin($latDiff/2) +
+                 cos(deg2rad($latitude)) * cos(deg2rad($checkpoint->lat)) *
+                 sin($lonDiff/2) * sin($lonDiff/2);
+            $c = 2 * atan2(sqrt($a), sqrt(1-$a));
+            $distance = $earthRadius * $c * 1000; // Convert to meters
+
+            // Calculate the absolute difference in coordinates
+            $latDelta = abs($checkpoint->lat - $latitude);
+            $lonDelta = abs($checkpoint->lng - $longitude);
+
+            // Log detailed checkpoint information
+            $checkpointLog[] = [
+                'name' => $checkpoint->name,
+                'checkpoint_lat' => $checkpoint->lat,
+                'checkpoint_lng' => $checkpoint->lng,
+                'user_lat' => $latitude,
+                'user_lng' => $longitude,
+                'distance' => $distance,
+                'latDelta' => $latDelta,
+                'lonDelta' => $lonDelta
+            ];
+
+            return [
+                'checkpoint' => $checkpoint,
+                'distance' => $distance,
+                'latDelta' => $latDelta,
+                'lonDelta' => $lonDelta
+            ];
+        })->filter(function ($item) {
+            // Allow a more generous margin (within 500 meters)
+            return $item['distance'] <= 500;
+        })->sortBy('distance')->first();
+
+        // Log detailed information for debugging
+        if ($nearestCheckpoint) {
+            Notification::make()
+                ->title('Checkpoint Found')
+                ->body("Nearest Checkpoint: {$nearestCheckpoint['checkpoint']->name}, Distance: " . 
+                    round($nearestCheckpoint['distance'], 2) . " meters")
+                ->info()
+                ->send();
+        } else {
+            // If no checkpoint found, create a more descriptive notification
+            $closestCheckpoint = collect($checkpointLog)->sortBy('distance')->first();
+            
+            Notification::make()
+                ->title('Location Too Far from Checkpoints')
+                ->body(
+                    "You are not within 500 meters of any checkpoint.\n" .
+                    "Closest Checkpoint: {$closestCheckpoint['name']}\n" .
+                    "Distance: " . round($closestCheckpoint['distance'] / 1000, 2) . " km\n" .
+                    "Your Location: Lat {$closestCheckpoint['user_lat']}, Lng {$closestCheckpoint['user_lng']}\n" .
+                    "Checkpoint Location: Lat {$closestCheckpoint['checkpoint_lat']}, Lng {$closestCheckpoint['checkpoint_lng']}"
+                )
+                ->warning()
+                ->send();
+        }
+
+        return $nearestCheckpoint ? $nearestCheckpoint['checkpoint'] : null;
+    }
+
     public function saveLocation($latitude, $longitude)
     {
         $this->latitude = $latitude;
@@ -156,5 +257,10 @@ class TimeTrackingPage extends Page
                 ->warning()
                 ->send();
         }
+    }
+
+    private function deg2rad($deg)
+    {
+        return $deg * pi() / 180;
     }
 }

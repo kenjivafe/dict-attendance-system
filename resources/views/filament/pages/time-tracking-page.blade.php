@@ -4,13 +4,13 @@
             <div class="mb-6 text-center">
                 <div
                     id="liveClock"
-                    class="text-3xl font-bold text-gray-800 dark:text-white"
+                    class="text-xl font-bold text-left text-gray-800 md:text-3xl dark:text-white"
                 >
                     00:00:00
                 </div>
                 <div
                     id="liveDate"
-                    class="text-lg text-left text-gray-600 dark:text-gray-300"
+                    class="text-left text-gray-600 text-md md:text-lg dark:text-gray-300"
                 >
                     Loading...
                 </div>
@@ -23,7 +23,7 @@
                 <button
                     x-data
                     x-on:click="$wire.recordTimeEntry()"
-                    class="px-4 py-2 font-bold text-black rounded-lg {{ $isAllRecorded ? 'bg-gray-300 dark:bg-gray-600 cursor-not-allowed' : 'bg-primary-500 dark:text-white hover:bg-primary-700' }}"
+                    class="px-4 py-2 font-bold text-black text-xs sm:text-sm rounded-lg {{ $isAllRecorded ? 'bg-gray-300 dark:bg-gray-600 cursor-not-allowed' : 'bg-primary-500 text-white hover:bg-primary-700' }}"
                     {{ $isAllRecorded ? 'disabled' : '' }}
                 >
                     {{ $nextTimeEntryLabel }}
@@ -34,7 +34,7 @@
                 <div class="text-center">
                     <button
                         id="getLocationBtn"
-                        class="relative px-4 py-2 text-sm text-gray-700 bg-green-500 rounded dark:text-gray-500 hover:bg-green-700"
+                        class="relative px-4 py-2 text-xs text-gray-700 bg-green-500 rounded md:text-sm dark:text-gray-500 hover:bg-green-700"
                     >
                         <span id="locationBtnText">Check Location</span>
                         <div id="locationLoadingSpinner" class="flex hidden absolute inset-0 justify-center items-center">
@@ -112,40 +112,135 @@
             // Show loading spinner
             const locationBtnText = document.getElementById('locationBtnText');
             const locationLoadingSpinner = document.getElementById('locationLoadingSpinner');
+            const getLocationBtn = document.getElementById('getLocationBtn');
 
             // Disable button and show spinner
-            this.disabled = true;
+            getLocationBtn.disabled = true;
             locationBtnText.classList.add('invisible');
             locationLoadingSpinner.classList.remove('hidden');
 
-            if ('geolocation' in navigator) {
-                navigator.geolocation.getCurrentPosition(function(position) {
-                    const latitude = position.coords.latitude;
-                    const longitude = position.coords.longitude;
+            // Comprehensive logging function
+            function logAndNotify(message, isError = false) {
+                console.log(isError ? 'Location Error:' : 'Location Info:', message);
 
-                    // Use Livewire to save location
-                    @this.call('saveLocation', latitude, longitude).then(() => {
-                        // Hide loading spinner
-                        locationBtnText.classList.remove('invisible');
-                        locationLoadingSpinner.classList.add('hidden');
-                        document.getElementById('getLocationBtn').disabled = false;
-                    });
-                }, function(error) {
-                    console.error('Error getting location:', error.message);
-                    alert('Unable to retrieve your location: ' + error.message);
+                // Use browser alert as a fallback if Filament notification fails
+                alert(message);
 
-                    // Hide loading spinner
-                    locationBtnText.classList.remove('invisible');
-                    locationLoadingSpinner.classList.add('hidden');
-                    document.getElementById('getLocationBtn').disabled = false;
-                });
-            } else {
-                alert('Geolocation is not supported by your browser');
+                // Attempt Filament notification if available
+                try {
+                    if (isError) {
+                        Notification.make()
+                            .title('Location Error')
+                            .body(message)
+                            .danger()
+                            .send();
+                    } else {
+                        Notification.make()
+                            .title('Location Info')
+                            .body(message)
+                            .info()
+                            .send();
+                    }
+                } catch (notificationError) {
+                    console.error('Failed to send Filament notification:', notificationError);
+                }
+            }
 
-                // Hide loading spinner
+            // Development mode bypass for secure context
+            const isDevelopment = window.location.hostname === 'localhost' ||
+                                  window.location.hostname === '127.0.0.1' ||
+                                  window.location.hostname.includes('.local');
+
+            // Check if the site is served over a secure context
+            if (!window.isSecureContext && !isDevelopment) {
+                logAndNotify('Geolocation requires a secure (HTTPS) connection. Please use HTTPS.', true);
+
+                // Reset button state
                 locationBtnText.classList.remove('invisible');
                 locationLoadingSpinner.classList.add('hidden');
-                document.getElementById('getLocationBtn').disabled = false;
+                getLocationBtn.disabled = false;
+                return;
+            }
+
+            // Check if geolocation is supported
+            if ('geolocation' in navigator) {
+                // Verbose logging about geolocation support
+                // logAndNotify('Geolocation is supported. Attempting to get location.');
+
+                // Request location with maximum options
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        // Successfully got location
+                        const latitude = position.coords.latitude;
+                        const longitude = position.coords.longitude;
+                        const accuracy = position.coords.accuracy;
+
+                        // Log detailed location information
+                        // logAndNotify(`Location found: Lat ${latitude}, Lng ${longitude}, Accuracy: ${accuracy}m`);
+
+                        // Attempt to save location via Livewire
+                        try {
+                            @this.call('saveLocation', latitude, longitude)
+                                .then(() => {
+                                    // logAndNotify('Location saved successfully');
+                                })
+                                .catch((error) => {
+                                    logAndNotify(`Failed to save location: ${error}`, true);
+                                })
+                                .finally(() => {
+                                    // Reset button state
+                                    locationBtnText.classList.remove('invisible');
+                                    locationLoadingSpinner.classList.add('hidden');
+                                    getLocationBtn.disabled = false;
+                                });
+                        } catch (livewireError) {
+                            logAndNotify(`Livewire call failed: ${livewireError}`, true);
+
+                            // Reset button state
+                            locationBtnText.classList.remove('invisible');
+                            locationLoadingSpinner.classList.add('hidden');
+                            getLocationBtn.disabled = false;
+                        }
+                    },
+                    function(error) {
+                        // Location retrieval failed
+                        let errorMessage = '';
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED:
+                                errorMessage = "Location permission denied. Please enable location services in your browser or device settings.";
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                errorMessage = "Location information is unavailable. Check your device's location settings.";
+                                break;
+                            case error.TIMEOUT:
+                                errorMessage = "Location request timed out. Please try again.";
+                                break;
+                            default:
+                                errorMessage = `Unknown location error: ${error.message}`;
+                        }
+
+                        // Log and notify about the error
+                        logAndNotify(errorMessage, true);
+
+                        // Reset button state
+                        locationBtnText.classList.remove('invisible');
+                        locationLoadingSpinner.classList.add('hidden');
+                        getLocationBtn.disabled = false;
+                    },
+                    {
+                        enableHighAccuracy: true,  // Request most accurate location
+                        timeout: 30000,            // 30 seconds timeout
+                        maximumAge: 0              // Don't use cached location
+                    }
+                );
+            } else {
+                // Geolocation not supported
+                logAndNotify('Geolocation is not supported by your browser', true);
+
+                // Reset button state
+                locationBtnText.classList.remove('invisible');
+                locationLoadingSpinner.classList.add('hidden');
+                getLocationBtn.disabled = false;
             }
         });
     </script>

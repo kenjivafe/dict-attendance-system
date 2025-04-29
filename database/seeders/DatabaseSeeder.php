@@ -48,6 +48,6 @@ class DatabaseSeeder extends Seeder
             ProjectSeeder::class,
         ]);
 
-        Checkpoint::create(['name' => 'DICT Region II', 'lat' => 17.621510, 'lng' => 121.721800]);
+        Checkpoint::create(['name' => 'DICT Region II', 'lat' => 17.62166865586697, 'lng' => 121.72190964112359]);
     }
 }
