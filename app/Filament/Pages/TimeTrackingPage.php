@@ -33,50 +33,40 @@ class TimeTrackingPage extends Page
     }
 
     #[On('set-coordinates')]
-    public function setCoordinates($latitude, $longitude)
+    public function setCoordinates($latitude, $longitude, $skipNotification = false)
     {
         $this->latitude = $latitude;
         $this->longitude = $longitude;
 
         // Find the nearest checkpoint
-        $nearestCheckpoint = $this->findNearestCheckpoint($latitude, $longitude);
-
-        if ($nearestCheckpoint) {
-            Notification::make()
-                ->title('Location Updated')
-                ->body("You are near {$nearestCheckpoint->name}")
-                ->success()
-                ->send();
-        } else {
-            Notification::make()
-                ->title('Location Updated')
-                ->body("You are not near any registered checkpoint.")
-                ->warning()
-                ->send();
-        }
+        $this->findNearestCheckpoint($latitude, $longitude, $skipNotification);
     }
 
-    private function validateTimeEntry()
+    private function validateTimeEntry($skipNotification = false)
     {
         if (!Auth::check()) {
-            Notification::make()
-                ->title('Authentication Required')
-                ->body('Please log in to record time.')
-                ->danger()
-                ->send();
+            if (!$skipNotification) {
+                Notification::make()
+                    ->title('Authentication Required')
+                    ->body('Please log in to record time.')
+                    ->danger()
+                    ->send();
+            }
             return false;
         }
 
         if (!$this->latitude || !$this->longitude) {
-            Notification::make()
-                ->title('Location Required')
-                ->body('Please get your location before recording time.')
-                ->warning()
-                ->send();
+            if (!$skipNotification) {
+                Notification::make()
+                    ->title('Location Required')
+                    ->body('Please get your location before recording time.')
+                    ->warning()
+                    ->send();
+            }
             return false;
         }
 
-        $nearestCheckpoint = $this->findNearestCheckpoint($this->latitude, $this->longitude);
+        $nearestCheckpoint = $this->findNearestCheckpoint($this->latitude, $this->longitude, $skipNotification);
 
         if (!$nearestCheckpoint) {
             Notification::make()
@@ -92,7 +82,7 @@ class TimeTrackingPage extends Page
 
     private function recordSpecificTime($timeField)
     {
-        $nearestCheckpoint = $this->validateTimeEntry();
+        $nearestCheckpoint = $this->validateTimeEntry(true);
         if (!$nearestCheckpoint) {
             return;
         }
@@ -200,7 +190,7 @@ class TimeTrackingPage extends Page
         return 'All entries recorded';
     }
 
-    private function findNearestCheckpoint($latitude, $longitude)
+    private function findNearestCheckpoint($latitude, $longitude, $skipNotification = false)
     {
         // Earth's radius in kilometers
         $earthRadius = 6371;
@@ -249,39 +239,44 @@ class TimeTrackingPage extends Page
             return $item['distance'] <= 500;
         })->sortBy('distance')->first();
 
-        // Log detailed information for debugging
-        if ($nearestCheckpoint) {
-            Notification::make()
-                ->title('Checkpoint Found')
-                ->body("Nearest Checkpoint: {$nearestCheckpoint['checkpoint']->name}, Distance: " . 
-                    round($nearestCheckpoint['distance'], 2) . " meters")
-                ->info()
-                ->send();
-        } else {
-            // If no checkpoint found, create a more descriptive notification
-            $closestCheckpoint = collect($checkpointLog)->sortBy('distance')->first();
-            
-            Notification::make()
-                ->title('Location Too Far from Checkpoints')
-                ->body(
-                    "You are not within 500 meters of any checkpoint.\n" .
-                    "Closest Checkpoint: {$closestCheckpoint['name']}\n" .
-                    "Distance: " . round($closestCheckpoint['distance'] / 1000, 2) . " km\n" .
-                    "Your Location: Lat {$closestCheckpoint['user_lat']}, Lng {$closestCheckpoint['user_lng']}\n" .
-                    "Checkpoint Location: Lat {$closestCheckpoint['checkpoint_lat']}, Lng {$closestCheckpoint['checkpoint_lng']}"
-                )
-                ->warning()
-                ->send();
+        // Only show notification if not skipping
+        if (!$skipNotification) {
+            if ($nearestCheckpoint) {
+                // Get address information
+                $address = $this->getLocationAddress($latitude, $longitude);
+
+                Notification::make()
+                    ->title('Location Updated')
+                    ->body(
+                        "Nearest Checkpoint: {$nearestCheckpoint['checkpoint']->name}\n" .
+                        "Distance: " . round($nearestCheckpoint['distance'], 2) . " meters\n" .
+                        "Address: {$address}"
+                    )
+                    ->success()
+                    ->send();
+            } else {
+                // If no checkpoint found, create a more descriptive notification
+                $closestCheckpoint = collect($checkpointLog)->sortBy('distance')->first();
+                
+                Notification::make()
+                    ->title('Location Too Far from Checkpoints')
+                    ->body(
+                        "You are not within 500 meters of any checkpoint.\n" .
+                        "Closest Checkpoint: {$closestCheckpoint['name']}\n" .
+                        "Distance: " . round($closestCheckpoint['distance'] / 1000, 2) . " km\n" .
+                        "Your Location: Lat {$closestCheckpoint['user_lat']}, Lng {$closestCheckpoint['user_lng']}\n" .
+                        "Checkpoint Location: Lat {$closestCheckpoint['checkpoint_lat']}, Lng {$closestCheckpoint['checkpoint_lng']}"
+                    )
+                    ->warning()
+                    ->send();
+            }
         }
 
         return $nearestCheckpoint ? $nearestCheckpoint['checkpoint'] : null;
     }
 
-    public function saveLocation($latitude, $longitude)
+    private function getLocationAddress($latitude, $longitude)
     {
-        $this->latitude = $latitude;
-        $this->longitude = $longitude;
-
         // Use Google Geocoding API to get the address
         $apiKey = config('services.google.geocoding_api_key');
         $url = "https://maps.googleapis.com/maps/api/geocode/json?latlng={$latitude},{$longitude}&key={$apiKey}";
@@ -290,24 +285,19 @@ class TimeTrackingPage extends Page
             $response = Http::get($url);
             $data = $response->json();
 
-            $address = 'Unknown Location';
             if (!empty($data['results']) && isset($data['results'][0]['formatted_address'])) {
-                $address = $data['results'][0]['formatted_address'];
+                return $data['results'][0]['formatted_address'];
             }
-
-            Notification::make()
-                ->title('You are in: ' . $address)
-                ->body("Latitude: {$latitude}, Longitude: {$longitude}")
-                ->success()
-                ->send();
         } catch (\Exception $e) {
-            // Fallback to default notification if geocoding fails
-            Notification::make()
-                ->title('Location Saved')
-                ->body("Latitude: {$latitude}, Longitude: {$longitude}")
-                ->warning()
-                ->send();
+            // Ignore geocoding errors
         }
+
+        return 'Unknown Location';
+    }
+
+    public function saveLocation($latitude, $longitude)
+    {
+        $this->setCoordinates($latitude, $longitude, true);
     }
 
     private function deg2rad($deg)

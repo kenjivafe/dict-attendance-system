@@ -121,15 +121,15 @@
                         const longitude = position.coords.longitude;
 
                         // Call Livewire method to update coordinates
-                        window.Livewire.dispatch('set-coordinates', [latitude, longitude]);
+                        window.Livewire.dispatch('set-coordinates', [latitude, longitude, false]);
 
                         // Reset button state
                         locationBtnText.classList.remove('hidden');
                         locationLoadingSpinner.classList.add('hidden');
                         getLocationBtn.disabled = false;
-                        locationBtnText.textContent = 'Location Updated';
-                        getLocationBtn.classList.remove('bg-green-500', 'hover:bg-green-700');
-                        getLocationBtn.classList.add('bg-blue-500', 'hover:bg-blue-700');
+                        locationBtnText.textContent = 'Check Location';
+                        getLocationBtn.classList.remove('bg-red-500', 'hover:bg-red-700');
+                        getLocationBtn.classList.add('bg-green-500', 'hover:bg-green-700');
                     },
                     function(error) {
                         // Error callback
