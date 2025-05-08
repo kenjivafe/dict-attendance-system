@@ -16,18 +16,7 @@
                 </div>
             </div>
             <div class="text-center">
-                @php
-                    $nextTimeEntryLabel = $this->getNextTimeEntryLabel();
-                    $isAllRecorded = $nextTimeEntryLabel === 'All entries recorded';
-                @endphp
-                <button
-                    x-data
-                    x-on:click="$wire.recordTimeEntry()"
-                    class="px-4 py-2 font-bold text-black text-xs sm:text-sm rounded-lg {{ $isAllRecorded ? 'bg-gray-300 dark:bg-gray-600 cursor-not-allowed' : 'bg-primary-500 text-white hover:bg-primary-700' }}"
-                    {{ $isAllRecorded ? 'disabled' : '' }}
-                >
-                    {{ $nextTimeEntryLabel }}
-                </button>
+
 
 
 
@@ -50,38 +39,129 @@
         </div>
 
         <div class="grid grid-cols-1 gap-4 mt-6 mb-6 md:grid-cols-2">
-            <div class="p-4 text-center bg-white rounded-lg shadow transition-colors duration-300 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700">
+            <button
+                wire:click="recordTimeInAm"
+                @class([
+                    'w-full p-4 text-center bg-white rounded-lg shadow transition-colors duration-300 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700',
+                    'cursor-pointer' => $this->getTodayTimeEntry('time_in_am') === 'Not recorded',
+                    'cursor-not-allowed opacity-75' => $this->getTodayTimeEntry('time_in_am') !== 'Not recorded',
+                ])
+                {{ $this->getTodayTimeEntry('time_in_am') !== 'Not recorded' ? 'disabled' : '' }}
+            >
                 <h2 class="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-200">Time In (AM)</h2>
                 <div class="text-2xl font-bold {{ $this->getTodayTimeEntry('time_in_am') !== 'Not recorded' ? 'text-green-600 dark:text-green-400' : 'text-gray-400 dark:text-gray-500' }}">
                     {{ $this->getTodayTimeEntry('time_in_am') }}
                 </div>
-            </div>
+            </button>
 
-            <div class="p-4 text-center bg-white rounded-lg shadow transition-colors duration-300 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700">
+            <button
+                wire:click="recordTimeOutAm"
+                @class([
+                    'w-full p-4 text-center bg-white rounded-lg shadow transition-colors duration-300 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700',
+                    'cursor-pointer' => $this->getTodayTimeEntry('time_out_am') === 'Not recorded',
+                    'cursor-not-allowed opacity-75' => $this->getTodayTimeEntry('time_out_am') !== 'Not recorded',
+                ])
+                {{ $this->getTodayTimeEntry('time_out_am') !== 'Not recorded' ? 'disabled' : '' }}
+            >
                 <h2 class="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-200">Time Out (AM)</h2>
                 <div class="text-2xl font-bold {{ $this->getTodayTimeEntry('time_out_am') !== 'Not recorded' ? 'text-green-600 dark:text-green-400' : 'text-gray-400 dark:text-gray-500' }}">
                     {{ $this->getTodayTimeEntry('time_out_am') }}
                 </div>
-            </div>
+            </button>
 
-            <div class="p-4 text-center bg-white rounded-lg shadow transition-colors duration-300 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700">
+            <button
+                wire:click="recordTimeInPm"
+                @class([
+                    'w-full p-4 text-center bg-white rounded-lg shadow transition-colors duration-300 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700',
+                    'cursor-pointer' => $this->getTodayTimeEntry('time_in_pm') === 'Not recorded',
+                    'cursor-not-allowed opacity-75' => $this->getTodayTimeEntry('time_in_pm') !== 'Not recorded',
+                ])
+                {{ $this->getTodayTimeEntry('time_in_pm') !== 'Not recorded' ? 'disabled' : '' }}
+            >
                 <h2 class="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-200">Time In (PM)</h2>
                 <div class="text-2xl font-bold {{ $this->getTodayTimeEntry('time_in_pm') !== 'Not recorded' ? 'text-green-600 dark:text-green-400' : 'text-gray-400 dark:text-gray-500' }}">
                     {{ $this->getTodayTimeEntry('time_in_pm') }}
                 </div>
-            </div>
+            </button>
 
-            <div class="p-4 text-center bg-white rounded-lg shadow transition-colors duration-300 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700">
+            <button
+                wire:click="recordTimeOutPm"
+                @class([
+                    'w-full p-4 text-center bg-white rounded-lg shadow transition-colors duration-300 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700',
+                    'cursor-pointer' => $this->getTodayTimeEntry('time_out_pm') === 'Not recorded',
+                    'cursor-not-allowed opacity-75' => $this->getTodayTimeEntry('time_out_pm') !== 'Not recorded',
+                ])
+                {{ $this->getTodayTimeEntry('time_out_pm') !== 'Not recorded' ? 'disabled' : '' }}
+            >
                 <h2 class="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-200">Time Out (PM)</h2>
                 <div class="text-2xl font-bold {{ $this->getTodayTimeEntry('time_out_pm') !== 'Not recorded' ? 'text-green-600 dark:text-green-400' : 'text-gray-400 dark:text-gray-500' }}">
                     {{ $this->getTodayTimeEntry('time_out_pm') }}
                 </div>
-            </div>
+            </button>
         </div>
 
     </div>
 
     <script>
+        function getLocation() {
+            // Show loading spinner
+            const locationBtnText = document.getElementById('locationBtnText');
+            const locationLoadingSpinner = document.getElementById('locationLoadingSpinner');
+            const getLocationBtn = document.getElementById('getLocationBtn');
+            
+            locationBtnText.classList.add('hidden');
+            locationLoadingSpinner.classList.remove('hidden');
+            getLocationBtn.disabled = true;
+
+            if ('geolocation' in navigator) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        // Success callback
+                        const latitude = position.coords.latitude;
+                        const longitude = position.coords.longitude;
+
+                        // Call Livewire method to update coordinates
+                        window.Livewire.dispatch('set-coordinates', [latitude, longitude]);
+
+                        // Reset button state
+                        locationBtnText.classList.remove('hidden');
+                        locationLoadingSpinner.classList.add('hidden');
+                        getLocationBtn.disabled = false;
+                        locationBtnText.textContent = 'Location Updated';
+                        getLocationBtn.classList.remove('bg-green-500', 'hover:bg-green-700');
+                        getLocationBtn.classList.add('bg-blue-500', 'hover:bg-blue-700');
+                    },
+                    function(error) {
+                        // Error callback
+                        console.error('Error getting location:', error);
+                        // Reset button state
+                        locationBtnText.classList.remove('hidden');
+                        locationLoadingSpinner.classList.add('hidden');
+                        getLocationBtn.disabled = false;
+                        locationBtnText.textContent = 'Retry Location';
+                        getLocationBtn.classList.remove('bg-green-500', 'hover:bg-green-700');
+                        getLocationBtn.classList.add('bg-red-500', 'hover:bg-red-700');
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                        maximumAge: 0
+                    }
+                );
+            } else {
+                console.error('Geolocation is not supported');
+                // Reset button state
+                locationBtnText.classList.remove('hidden');
+                locationLoadingSpinner.classList.add('hidden');
+                getLocationBtn.disabled = false;
+            }
+        }
+
+        // Get location when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            getLocation();
+        });
+
         function updateLiveClock() {
             const now = new Date();
             const timeOptions = {
@@ -109,10 +189,7 @@
         setInterval(updateLiveClock, 1000);
 
         document.getElementById('getLocationBtn').addEventListener('click', function() {
-            // Show loading spinner
-            const locationBtnText = document.getElementById('locationBtnText');
-            const locationLoadingSpinner = document.getElementById('locationLoadingSpinner');
-            const getLocationBtn = document.getElementById('getLocationBtn');
+            getLocation();
 
             // Disable button and show spinner
             getLocationBtn.disabled = true;

@@ -9,6 +9,7 @@ use App\Models\Checkpoint;
 use Filament\Notifications\Notification;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
+use Livewire\Attributes\On;
 
 class TimeTrackingPage extends Page
 {
@@ -17,6 +18,8 @@ class TimeTrackingPage extends Page
     protected static ?string $title = 'Time Trackings';
 
     protected static string $view = 'filament.pages.time-tracking-page';
+
+
 
     public $latitude = null;
     public $longitude = null;
@@ -29,42 +32,71 @@ class TimeTrackingPage extends Page
             ->first();
     }
 
-    public function recordTimeEntry()
+    #[On('set-coordinates')]
+    public function setCoordinates($latitude, $longitude)
     {
-        // Validate that a user is logged in
+        $this->latitude = $latitude;
+        $this->longitude = $longitude;
+
+        // Find the nearest checkpoint
+        $nearestCheckpoint = $this->findNearestCheckpoint($latitude, $longitude);
+
+        if ($nearestCheckpoint) {
+            Notification::make()
+                ->title('Location Updated')
+                ->body("You are near {$nearestCheckpoint->name}")
+                ->success()
+                ->send();
+        } else {
+            Notification::make()
+                ->title('Location Updated')
+                ->body("You are not near any registered checkpoint.")
+                ->warning()
+                ->send();
+        }
+    }
+
+    private function validateTimeEntry()
+    {
         if (!Auth::check()) {
             Notification::make()
                 ->title('Authentication Required')
                 ->body('Please log in to record time.')
                 ->danger()
                 ->send();
-            return;
+            return false;
         }
 
-        // Validate location
         if (!$this->latitude || !$this->longitude) {
             Notification::make()
                 ->title('Location Required')
                 ->body('Please get your location before recording time.')
                 ->warning()
                 ->send();
-            return;
+            return false;
         }
 
-        // Find the nearest checkpoint
         $nearestCheckpoint = $this->findNearestCheckpoint($this->latitude, $this->longitude);
 
-        // Validate location proximity
         if (!$nearestCheckpoint) {
             Notification::make()
                 ->title('Invalid Location')
                 ->body('You are not near any registered checkpoint.')
                 ->danger()
                 ->send();
+            return false;
+        }
+
+        return $nearestCheckpoint;
+    }
+
+    private function recordSpecificTime($timeField)
+    {
+        $nearestCheckpoint = $this->validateTimeEntry();
+        if (!$nearestCheckpoint) {
             return;
         }
 
-        // Find or create today's attendance record
         $attendance = Attendance::firstOrCreate(
             [
                 'user_id' => Auth::id(),
@@ -72,28 +104,47 @@ class TimeTrackingPage extends Page
             ]
         );
 
-        // Determine which time field to update
-        $timeFieldToUpdate = $this->determineNextTimeField($attendance);
-
-        if ($timeFieldToUpdate) {
-            $attendance->$timeFieldToUpdate = now();
-            $attendance->save();
-
-            // Update the local attendance property
-            $this->attendance = $attendance;
-
+        if ($attendance->$timeField !== null) {
             Notification::make()
-                ->title('Time Entry Recorded')
-                ->body("Successfully recorded {$timeFieldToUpdate} at {$nearestCheckpoint->name}")
-                ->success()
-                ->send();
-        } else {
-            Notification::make()
-                ->title('Time Entry Error')
-                ->body('All time entries for today have been recorded.')
+                ->title('Already Recorded')
+                ->body("Time for {$timeField} has already been recorded.")
                 ->warning()
                 ->send();
+            return;
         }
+
+        $attendance->$timeField = now();
+        $attendance->save();
+
+        // Update the local attendance property
+        $this->attendance = $attendance;
+
+        $timeFieldLabel = str_replace('_', ' ', $timeField);
+        Notification::make()
+            ->title('Time Entry Recorded')
+            ->body("Successfully recorded {$timeFieldLabel} at {$nearestCheckpoint->name}")
+            ->success()
+            ->send();
+    }
+
+    public function recordTimeInAm()
+    {
+        $this->recordSpecificTime('time_in_am');
+    }
+
+    public function recordTimeOutAm()
+    {
+        $this->recordSpecificTime('time_out_am');
+    }
+
+    public function recordTimeInPm()
+    {
+        $this->recordSpecificTime('time_in_pm');
+    }
+
+    public function recordTimeOutPm()
+    {
+        $this->recordSpecificTime('time_out_pm');
     }
 
     public function getTodayTimeEntry($field)
