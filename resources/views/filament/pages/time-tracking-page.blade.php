@@ -58,10 +58,10 @@
                 wire:click="recordTimeOutAm"
                 @class([
                     'w-full p-4 text-center bg-white rounded-lg shadow transition-colors duration-300 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700',
-                    'cursor-pointer' => $this->getTodayTimeEntry('time_out_am') === 'Not recorded',
-                    'cursor-not-allowed opacity-75' => $this->getTodayTimeEntry('time_out_am') !== 'Not recorded',
+                    'cursor-pointer' => $this->getTodayTimeEntry('time_out_am') === 'Not recorded' && $this->getTodayTimeEntry('time_in_am') !== 'Not recorded',
+                    'cursor-not-allowed opacity-75' => $this->getTodayTimeEntry('time_out_am') !== 'Not recorded' || $this->getTodayTimeEntry('time_in_am') === 'Not recorded',
                 ])
-                {{ $this->getTodayTimeEntry('time_out_am') !== 'Not recorded' ? 'disabled' : '' }}
+                {{ $this->getTodayTimeEntry('time_out_am') !== 'Not recorded' || $this->getTodayTimeEntry('time_in_am') === 'Not recorded' ? 'disabled' : '' }}
             >
                 <h2 class="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-200">Time Out (AM)</h2>
                 <div class="text-2xl font-bold {{ $this->getTodayTimeEntry('time_out_am') !== 'Not recorded' ? 'text-green-600 dark:text-green-400' : 'text-gray-400 dark:text-gray-500' }}">
@@ -73,10 +73,10 @@
                 wire:click="recordTimeInPm"
                 @class([
                     'w-full p-4 text-center bg-white rounded-lg shadow transition-colors duration-300 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700',
-                    'cursor-pointer' => $this->getTodayTimeEntry('time_in_pm') === 'Not recorded',
-                    'cursor-not-allowed opacity-75' => $this->getTodayTimeEntry('time_in_pm') !== 'Not recorded',
+                    'cursor-pointer' => $this->getTodayTimeEntry('time_in_pm') === 'Not recorded' && $this->isAfternoon(),
+                    'cursor-not-allowed opacity-75' => $this->getTodayTimeEntry('time_in_pm') !== 'Not recorded' || !$this->isAfternoon(),
                 ])
-                {{ $this->getTodayTimeEntry('time_in_pm') !== 'Not recorded' ? 'disabled' : '' }}
+                {{ $this->getTodayTimeEntry('time_in_pm') !== 'Not recorded' || !$this->isAfternoon() ? 'disabled' : '' }}
             >
                 <h2 class="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-200">Time In (PM)</h2>
                 <div class="text-2xl font-bold {{ $this->getTodayTimeEntry('time_in_pm') !== 'Not recorded' ? 'text-green-600 dark:text-green-400' : 'text-gray-400 dark:text-gray-500' }}">
@@ -88,10 +88,10 @@
                 wire:click="recordTimeOutPm"
                 @class([
                     'w-full p-4 text-center bg-white rounded-lg shadow transition-colors duration-300 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700',
-                    'cursor-pointer' => $this->getTodayTimeEntry('time_out_pm') === 'Not recorded',
-                    'cursor-not-allowed opacity-75' => $this->getTodayTimeEntry('time_out_pm') !== 'Not recorded',
+                    'cursor-pointer' => $this->getTodayTimeEntry('time_out_pm') === 'Not recorded' && $this->getTodayTimeEntry('time_in_pm') !== 'Not recorded',
+                    'cursor-not-allowed opacity-75' => $this->getTodayTimeEntry('time_out_pm') !== 'Not recorded' || $this->getTodayTimeEntry('time_in_pm') === 'Not recorded',
                 ])
-                {{ $this->getTodayTimeEntry('time_out_pm') !== 'Not recorded' ? 'disabled' : '' }}
+                {{ $this->getTodayTimeEntry('time_out_pm') !== 'Not recorded' || $this->getTodayTimeEntry('time_in_pm') === 'Not recorded' ? 'disabled' : '' }}
             >
                 <h2 class="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-200">Time Out (PM)</h2>
                 <div class="text-2xl font-bold {{ $this->getTodayTimeEntry('time_out_pm') !== 'Not recorded' ? 'text-green-600 dark:text-green-400' : 'text-gray-400 dark:text-gray-500' }}">

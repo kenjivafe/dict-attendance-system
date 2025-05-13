@@ -190,6 +190,12 @@ class TimeTrackingPage extends Page
         return 'All entries recorded';
     }
 
+    public function isAfternoon()
+    {
+        $now = now();
+        return $now->hour >= 12;
+    }
+
     private function findNearestCheckpoint($latitude, $longitude, $skipNotification = false)
     {
         // Earth's radius in kilometers
