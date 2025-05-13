@@ -1,4 +1,21 @@
 <x-filament-panels::page>
+    <!-- Confirmation Modal -->
+    <div id="confirmationModal" class="flex hidden fixed inset-0 z-50 justify-center items-center">
+        <div class="absolute inset-0 bg-black/50"></div>
+        <div class="relative p-6 mx-auto w-80 bg-white rounded-lg shadow-xl dark:bg-gray-800">
+            <h3 id="modalTitle" class="mb-4 text-lg font-bold text-gray-900 dark:text-white"></h3>
+            <p id="modalMessage" class="mb-6 text-gray-500 dark:text-gray-300"></p>
+            <br>
+            <div class="flex gap-2 justify-end">
+                <button id="modalCancelBtn" class="px-4 py-2 text-sm text-gray-500 hover:text-gray-800 dark:text-gray-300 dark:hover:text-white">
+                    Cancel
+                </button>
+                <button id="modalConfirmBtn" class="px-4 py-2 text-sm text-white rounded bg-primary-600 hover:bg-primary-700">
+                    Confirm
+                </button>
+            </div>
+        </div>
+    </div>
     <div class="container p-6 mx-auto">
         <div class="flex gap-4 justify-between">
             <div class="mb-6 text-center">
@@ -40,7 +57,7 @@
 
         <div class="grid grid-cols-1 gap-4 mt-6 mb-6 md:grid-cols-2">
             <button
-                wire:click="recordTimeInAm"
+                id="timeInAmBtn"
                 @class([
                     'w-full p-4 text-center bg-white rounded-lg shadow transition-colors duration-300 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700',
                     'cursor-pointer' => $this->getTodayTimeEntry('time_in_am') === 'Not recorded',
@@ -55,7 +72,7 @@
             </button>
 
             <button
-                wire:click="recordTimeOutAm"
+                id="timeOutAmBtn"
                 @class([
                     'w-full p-4 text-center bg-white rounded-lg shadow transition-colors duration-300 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700',
                     'cursor-pointer' => $this->getTodayTimeEntry('time_out_am') === 'Not recorded' && $this->getTodayTimeEntry('time_in_am') !== 'Not recorded',
@@ -70,7 +87,7 @@
             </button>
 
             <button
-                wire:click="recordTimeInPm"
+                id="timeInPmBtn"
                 @class([
                     'w-full p-4 text-center bg-white rounded-lg shadow transition-colors duration-300 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700',
                     'cursor-pointer' => $this->getTodayTimeEntry('time_in_pm') === 'Not recorded' && $this->isAfternoon(),
@@ -85,7 +102,7 @@
             </button>
 
             <button
-                wire:click="recordTimeOutPm"
+                id="timeOutPmBtn"
                 @class([
                     'w-full p-4 text-center bg-white rounded-lg shadow transition-colors duration-300 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700',
                     'cursor-pointer' => $this->getTodayTimeEntry('time_out_pm') === 'Not recorded' && $this->getTodayTimeEntry('time_in_pm') !== 'Not recorded',
@@ -108,7 +125,7 @@
             const locationBtnText = document.getElementById('locationBtnText');
             const locationLoadingSpinner = document.getElementById('locationLoadingSpinner');
             const getLocationBtn = document.getElementById('getLocationBtn');
-            
+
             locationBtnText.classList.add('hidden');
             locationLoadingSpinner.classList.remove('hidden');
             getLocationBtn.disabled = true;
@@ -320,5 +337,72 @@
                 getLocationBtn.disabled = false;
             }
         });
+            // Press and hold functionality
+        function setupPressAndHold(buttonId, action, title) {
+            const button = document.getElementById(buttonId);
+            const modal = document.getElementById('confirmationModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalMessage = document.getElementById('modalMessage');
+            const confirmBtn = document.getElementById('modalConfirmBtn');
+            const cancelBtn = document.getElementById('modalCancelBtn');
+
+            let pressTimer;
+            let isPressed = false;
+
+            function showModal() {
+                modalTitle.textContent = title;
+                modalMessage.textContent = 'Are you sure you want to record your time?';
+                modal.classList.remove('hidden');
+
+                return new Promise((resolve) => {
+                    confirmBtn.onclick = () => {
+                        modal.classList.add('hidden');
+                        resolve(true);
+                    };
+                    cancelBtn.onclick = () => {
+                        modal.classList.add('hidden');
+                        resolve(false);
+                    };
+                });
+            }
+
+            function startPress() {
+                if (button.disabled) return;
+
+                isPressed = true;
+                pressTimer = setTimeout(async () => {
+                    if (isPressed) {
+                        const confirmed = await showModal();
+                        if (confirmed) {
+                            @this[action]();
+                        }
+                    }
+                }, 1000); // 1 second hold time
+            }
+
+            function endPress() {
+                isPressed = false;
+                clearTimeout(pressTimer);
+            }
+
+            // Mouse events
+            button.addEventListener('mousedown', startPress);
+            button.addEventListener('mouseup', endPress);
+            button.addEventListener('mouseleave', endPress);
+
+            // Touch events
+            button.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                startPress();
+            });
+            button.addEventListener('touchend', endPress);
+            button.addEventListener('touchcancel', endPress);
+        }
+
+        // Setup press and hold for all time buttons
+        setupPressAndHold('timeInAmBtn', 'recordTimeInAm', 'Time In (AM)');
+        setupPressAndHold('timeOutAmBtn', 'recordTimeOutAm', 'Time Out (AM)');
+        setupPressAndHold('timeInPmBtn', 'recordTimeInPm', 'Time In (PM)');
+        setupPressAndHold('timeOutPmBtn', 'recordTimeOutPm', 'Time Out (PM)');
     </script>
 </x-filament-panels::page>
