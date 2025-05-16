@@ -6,6 +6,9 @@ use App\Filament\Resources\AttendanceResource;
 use App\Models\Attendance;
 use Filament\Actions;
 use Filament\Facades\Filament;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TimePicker;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ManageRecords;
 use Illuminate\Support\Facades\Auth;
@@ -21,13 +24,53 @@ class ManageAttendances extends ManageRecords
             ->where('user_id', Auth::id()) // Assuming attendance is per user
             ->exists();
 
-        return $hasAttendanceToday ? [] : [
-            Actions\Action::make('Time In Today')
+        $actions = [];
+
+        // Only add create action for admins
+        if (Auth::user()->hasRole(['super_admin', 'human_resource'])) {
+            $actions[] = Actions\CreateAction::make()
+                ->form([
+                    Select::make('user_id')
+                    ->label('Employee')
+                    ->options(\App\Models\User::pluck('name', 'id')->toArray())
+                    ->required()
+                    ->live()
+                    ->searchable()
+                    ->afterStateUpdated(function (callable $set) {
+                        // Clear the date field when user changes
+                        $set('date', null);
+                    }),
+                    DatePicker::make('date')
+                        ->label('Date')
+                        ->native(false)
+                        ->required()
+                        ->disabledDates(function (callable $get) {
+                            $userId = $get('user_id');
+                            if (!$userId) return [];
+
+                            // Format dates explicitly
+                            return Attendance::where('user_id', $userId)
+                                ->get()
+                                ->map(fn($attendance) => $attendance->date->format('Y-m-d'))
+                                ->toArray();
+                        }),
+                    TimePicker::make('time_in_am'),
+                    TimePicker::make('time_out_am'),
+                    TimePicker::make('time_in_pm'),
+                    TimePicker::make('time_out_pm'),
+                ]);
+        }
+
+        // Add Time In Today action for non-admins
+        if (!$hasAttendanceToday) {
+            $actions[] = Actions\Action::make('Time In Today')
                 ->icon('heroicon-o-clock')
                 ->color('primary')
                 ->modalContent(fn () => view('livewire.location-tracker'))
                 ->modalSubmitAction(false)
-                ->modalCancelAction(false)
-        ];
+                ->modalCancelAction(false);
+        }
+
+        return $actions;
     }
 }
