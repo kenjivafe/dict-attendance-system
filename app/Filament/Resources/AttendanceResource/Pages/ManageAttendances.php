@@ -31,15 +31,11 @@ class ManageAttendances extends ManageRecords
             $actions[] = Actions\CreateAction::make()
                 ->form([
                     Select::make('user_id')
-                    ->label('Employee')
-                    ->options(\App\Models\User::pluck('name', 'id')->toArray())
-                    ->required()
-                    ->live()
-                    ->searchable()
-                    ->afterStateUpdated(function (callable $set) {
-                        // Clear the date field when user changes
-                        $set('date', null);
-                    }),
+                        ->label('Employee')
+                        ->options(\App\Models\User::pluck('name', 'id')->toArray())
+                        ->required()
+                        ->live()
+                        ->searchable(),
                     DatePicker::make('date')
                         ->label('Date')
                         ->native(false)

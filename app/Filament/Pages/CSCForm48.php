@@ -433,19 +433,33 @@ class CSCForm48 extends Page
                 foreach (['C', 'D', 'E', 'F', 'G', 'H', 'L', 'M', 'N', 'O', 'P', 'Q'] as $col) {
                     $sheet->setCellValue($col . $row, '');
                 }
-            } elseif ($dayOfWeek == 6) { // Saturday
-                foreach (['C', 'D', 'E', 'F', 'L', 'M', 'N', 'O'] as $col) {
-                    $sheet->setCellValue($col . $row, 'Sat');
-                }
-                foreach (['G', 'H', 'P', 'Q'] as $col) { // No undertime for weekends
-                    $sheet->setCellValue($col . $row, '');
-                }
-            } elseif ($dayOfWeek == 7) { // Sunday
-                foreach (['C', 'D', 'E', 'F', 'L', 'M', 'N', 'O'] as $col) {
-                    $sheet->setCellValue($col . $row, 'Sun');
-                }
-                foreach (['G', 'H', 'P', 'Q'] as $col) { // No undertime for weekends
-                    $sheet->setCellValue($col . $row, '');
+            } elseif ($dayOfWeek == 6 || $dayOfWeek == 7) { // Weekend (Saturday or Sunday)
+                // Check if there's attendance data for this day
+                if (!empty($dtr)) {
+                    // Populate actual time data if available
+                    $sheet->setCellValue('C' . $row, !empty($dtr['time_in_am']) ? date('H:i', strtotime($dtr['time_in_am'])) : '');
+                    $sheet->setCellValue('D' . $row, !empty($dtr['time_out_am']) ? date('H:i', strtotime($dtr['time_out_am'])) : '');
+                    $sheet->setCellValue('E' . $row, !empty($dtr['time_in_pm']) ? date('H:i', strtotime($dtr['time_in_pm'])) : '');
+                    $sheet->setCellValue('F' . $row, !empty($dtr['time_out_pm']) ? date('H:i', strtotime($dtr['time_out_pm'])) : '');
+                    $sheet->setCellValue('G' . $row, $dtr['undertime_hours'] ?? '');
+                    $sheet->setCellValue('H' . $row, $dtr['undertime_minutes'] ?? '');
+                    
+                    // Duplicate for the second section (K-Q)
+                    $sheet->setCellValue('L' . $row, !empty($dtr['time_in_am']) ? date('H:i', strtotime($dtr['time_in_am'])) : '');
+                    $sheet->setCellValue('M' . $row, !empty($dtr['time_out_am']) ? date('H:i', strtotime($dtr['time_out_am'])) : '');
+                    $sheet->setCellValue('N' . $row, !empty($dtr['time_in_pm']) ? date('H:i', strtotime($dtr['time_in_pm'])) : '');
+                    $sheet->setCellValue('O' . $row, !empty($dtr['time_out_pm']) ? date('H:i', strtotime($dtr['time_out_pm'])) : '');
+                    $sheet->setCellValue('P' . $row, $dtr['undertime_hours'] ?? '');
+                    $sheet->setCellValue('Q' . $row, $dtr['undertime_minutes'] ?? '');
+                } else {
+                    // Display 'Sat' or 'Sun' if no attendance records
+                    $weekendLabel = ($dayOfWeek == 6) ? 'Sat' : 'Sun';
+                    foreach (['C', 'D', 'E', 'F', 'L', 'M', 'N', 'O'] as $col) {
+                        $sheet->setCellValue($col . $row, $weekendLabel);
+                    }
+                    foreach (['G', 'H', 'P', 'Q'] as $col) { // No undertime for weekends
+                        $sheet->setCellValue($col . $row, '');
+                    }
                 }
             } else {
                 // Populate actual data for weekdays
@@ -470,8 +484,8 @@ class CSCForm48 extends Page
             $sheet->getStyle("B{$row}:H{$row}")->getAlignment()->setHorizontal('center');
             $sheet->getStyle("K{$row}:Q{$row}")->getAlignment()->setHorizontal('center');
 
-            // Apply time format to C-F and L-O for valid weekdays
-            if ($isValidDay && $dayOfWeek != 6 && $dayOfWeek != 7) {
+            // Apply time format to C-F and L-O for valid days with attendance data
+            if ($isValidDay && (!empty($dtr) || ($dayOfWeek != 6 && $dayOfWeek != 7))) {
                 foreach (['C', 'D', 'E', 'F', 'L', 'M', 'N', 'O'] as $col) {
                     $sheet->getStyle($col . $row)->getNumberFormat()->setFormatCode('hh:mm');
                 }

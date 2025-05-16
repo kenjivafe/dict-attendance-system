@@ -64,22 +64,46 @@
                         <tr style="background-color: white; color: black; height: 10px;">
                             <td style="text-align: center; padding-right: 2px;">{{ $i }}</td>
                             <td style="border-right: 2px solid black; border-bottom: 1px dashed black; border-left: 2px solid black; text-align: center; padding: 0">
-                                {{ $isSaturday ? 'Sat' : ($isSunday ? 'Sun' : ($attendance['time_in_am'] ?? '')) }}
+                                @if(($isSaturday || $isSunday) && !empty($attendance))
+                                    {{ $attendance['time_in_am'] ?? '' }}
+                                @else
+                                    {{ $isSaturday ? 'Sat' : ($isSunday ? 'Sun' : ($attendance['time_in_am'] ?? '')) }}
+                                @endif
                             </td>
                             <td style="border-right: 6px double black; border-bottom: 1px dashed black; border-left: 2px solid black; text-align: center; padding: 0">
-                                {{ $isSaturday ? 'Sat' : ($isSunday ? 'Sun' : ($attendance['time_out_am'] ?? '')) }}
+                                @if(($isSaturday || $isSunday) && !empty($attendance))
+                                    {{ $attendance['time_out_am'] ?? '' }}
+                                @else
+                                    {{ $isSaturday ? 'Sat' : ($isSunday ? 'Sun' : ($attendance['time_out_am'] ?? '')) }}
+                                @endif
                             </td>
                             <td style="border-right: 2px solid black; border-bottom: 1px dashed black; border-left: 2px solid black; text-align: center; padding: 0">
-                                {{ $isSaturday ? 'Sat' : ($isSunday ? 'Sun' : ($attendance['time_in_pm'] ?? '')) }}
+                                @if(($isSaturday || $isSunday) && !empty($attendance))
+                                    {{ $attendance['time_in_pm'] ?? '' }}
+                                @else
+                                    {{ $isSaturday ? 'Sat' : ($isSunday ? 'Sun' : ($attendance['time_in_pm'] ?? '')) }}
+                                @endif
                             </td>
                             <td style="border-right: 6px double black; border-bottom: 1px dashed black; border-left: 2px solid black; text-align: center; padding: 0">
-                                {{ $isSaturday ? 'Sat' : ($isSunday ? 'Sun' : ($attendance['time_out_pm'] ?? '')) }}
+                                @if(($isSaturday || $isSunday) && !empty($attendance))
+                                    {{ $attendance['time_out_pm'] ?? '' }}
+                                @else
+                                    {{ $isSaturday ? 'Sat' : ($isSunday ? 'Sun' : ($attendance['time_out_pm'] ?? '')) }}
+                                @endif
                             </td>
                             <td style="border-right: 2px solid black; border-bottom: 1px dashed black; border-left: 2px solid black;  text-align: center; padding: 0">
-                                {{ (!$isSaturday && !$isSunday) ? ($attendance['undertime_hours'] ?? '') : '' }}
+                                @if(($isSaturday || $isSunday) && !empty($attendance))
+                                    {{ $attendance['undertime_hours'] ?? '' }}
+                                @else
+                                    {{ (!$isSaturday && !$isSunday) ? ($attendance['undertime_hours'] ?? '') : '' }}
+                                @endif
                             </td>
                             <td style="border-bottom: 1px dashed black; border-left: 2px solid black; text-align: center; padding: 0">
-                                {{ (!$isSaturday && !$isSunday) ? ($attendance['undertime_minutes'] ?? '') : '' }}
+                                @if(($isSaturday || $isSunday) && !empty($attendance))
+                                    {{ $attendance['undertime_minutes'] ?? '' }}
+                                @else
+                                    {{ (!$isSaturday && !$isSunday) ? ($attendance['undertime_minutes'] ?? '') : '' }}
+                                @endif
                             </td>
                         </tr>
                     @endfor
@@ -175,22 +199,46 @@
                         <tr style="background-color: white; color: black; height: 10px;">
                             <td style="text-align: center; padding-right: 2px;">{{ $i }}</td>
                             <td style="border-right: 2px solid black; border-bottom: 1px dashed black; border-left: 2px solid black; text-align: center; padding: 0">
-                                {{ $isSaturday ? 'Sat' : ($isSunday ? 'Sun' : ($attendance['time_in_am'] ?? '')) }}
+                                @if(($isSaturday || $isSunday) && !empty($attendance))
+                                    {{ $attendance['time_in_am'] ?? '' }}
+                                @else
+                                    {{ $isSaturday ? 'Sat' : ($isSunday ? 'Sun' : ($attendance['time_in_am'] ?? '')) }}
+                                @endif
                             </td>
                             <td style="border-right: 6px double black; border-bottom: 1px dashed black; border-left: 2px solid black; text-align: center; padding: 0">
-                                {{ $isSaturday ? 'Sat' : ($isSunday ? 'Sun' : ($attendance['time_out_am'] ?? '')) }}
+                                @if(($isSaturday || $isSunday) && !empty($attendance))
+                                    {{ $attendance['time_out_am'] ?? '' }}
+                                @else
+                                    {{ $isSaturday ? 'Sat' : ($isSunday ? 'Sun' : ($attendance['time_out_am'] ?? '')) }}
+                                @endif
                             </td>
                             <td style="border-right: 2px solid black; border-bottom: 1px dashed black; border-left: 2px solid black; text-align: center; padding: 0">
-                                {{ $isSaturday ? 'Sat' : ($isSunday ? 'Sun' : ($attendance['time_in_pm'] ?? '')) }}
+                                @if(($isSaturday || $isSunday) && !empty($attendance))
+                                    {{ $attendance['time_in_pm'] ?? '' }}
+                                @else
+                                    {{ $isSaturday ? 'Sat' : ($isSunday ? 'Sun' : ($attendance['time_in_pm'] ?? '')) }}
+                                @endif
                             </td>
                             <td style="border-right: 6px double black; border-bottom: 1px dashed black; border-left: 2px solid black; text-align: center; padding: 0">
-                                {{ $isSaturday ? 'Sat' : ($isSunday ? 'Sun' : ($attendance['time_out_pm'] ?? '')) }}
+                                @if(($isSaturday || $isSunday) && !empty($attendance))
+                                    {{ $attendance['time_out_pm'] ?? '' }}
+                                @else
+                                    {{ $isSaturday ? 'Sat' : ($isSunday ? 'Sun' : ($attendance['time_out_pm'] ?? '')) }}
+                                @endif
                             </td>
                             <td style="border-right: 2px solid black; border-bottom: 1px dashed black; border-left: 2px solid black;  text-align: center; padding: 0">
-                                {{ (!$isSaturday && !$isSunday) ? ($attendance['undertime_hours'] ?? '') : '' }}
+                                @if(($isSaturday || $isSunday) && !empty($attendance))
+                                    {{ $attendance['undertime_hours'] ?? '' }}
+                                @else
+                                    {{ (!$isSaturday && !$isSunday) ? ($attendance['undertime_hours'] ?? '') : '' }}
+                                @endif
                             </td>
                             <td style="border-bottom: 1px dashed black; border-left: 2px solid black; text-align: center; padding: 0">
-                                {{ (!$isSaturday && !$isSunday) ? ($attendance['undertime_minutes'] ?? '') : '' }}
+                                @if(($isSaturday || $isSunday) && !empty($attendance))
+                                    {{ $attendance['undertime_minutes'] ?? '' }}
+                                @else
+                                    {{ (!$isSaturday && !$isSunday) ? ($attendance['undertime_minutes'] ?? '') : '' }}
+                                @endif
                             </td>
                         </tr>
                     @endfor
